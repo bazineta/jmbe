@@ -186,87 +186,92 @@ public class IMBEFrame
 
         StepSizes stepSizes = StepSizes.fromL(L);
         QuantizedValueIndexes indexes = QuantizedValueIndexes.fromL(L);
-
-        //Alg 68 - Decoding gain vector G
-        for(int m = 3; m <= 7; m++)
-        {
-            //Note: both the step sizes and quantized value indexes arrays are zero-based indexes so we have to
-            // subtract 3 from m to align with the arrays
-            int[] indexSet = indexes.getIndexes()[m - 3];
-
-            if(indexSet.length > 0)
-            {
-                int b = mFrame.getInt(indexSet);
-                G[m - 1] = stepSizes.getStepSizes()[m - 3] * (b - COEFFICIENT_OFFSET[indexSet.length]);
-            }
-        }
+        decodeGainVector(G, stepSizes, indexes);
 
         int[][] harmonicAllocations = HarmonicAllocation.fromL(L).getAllocations();
         //Harmonic allocation for i = 6 (index 5) will always have the largest allocation - use it to dimension C array
 
         float[][] C = new float[7][harmonicAllocations[5].length + 1];
+        populateDctCoefficients(C, G, harmonicAllocations, stepSizes, indexes);
 
+        return createPredictionResiduals(L, C, harmonicAllocations);
+    }
+
+    private void decodeGainVector(float[] gains, StepSizes stepSizes, QuantizedValueIndexes indexes)
+    {
+        //Alg 68 - Decoding gain vector G
+        for(int m = 3; m <= 7; m++)
+        {
+            gains[m - 1] = decodeCoefficient(m, stepSizes, indexes);
+        }
+    }
+
+    private void populateDctCoefficients(float[][] coefficients, float[] gains, int[][] harmonicAllocations,
+        StepSizes stepSizes, QuantizedValueIndexes indexes)
+    {
         //Alg 69 & 70 - Construct gain vector R as inverse DCT of G and transfer Ri to C[i][1]
         for(int i = 1; i <= 6; i++)
         {
-            C[i][1] = G[1];
+            coefficients[i][1] = gains[1];
 
             for(int m = 2; m <= 6; m++)
             {
-                C[i][1] += (2.0f * G[m] * (float)Math.cos((Math.PI * (m - 1) * (i - 0.5f)) / 6.0f));
+                coefficients[i][1] += (2.0f * gains[m] * (float)Math.cos((Math.PI * (m - 1) * (i - 0.5f)) / 6.0f));
             }
         }
 
         //Alg 71 and 72 - Decode the higher order DCT Coefficients
-        int m = 0;
-        int[] indexSet;
-
         for(int i = 1; i <= 6; i++)
         {
             int[] harmonics = harmonicAllocations[i - 1];
 
-            if(harmonics.length > 1)
+            for(int j = 2; j <= harmonics.length; j++)
             {
-                for(int j = 2; j <= harmonics.length; j++)
-                {
-                    m = harmonics[j - 1];
-                    indexSet = indexes.getIndexes()[m - 3];
-
-                    if(indexSet.length > 0)
-                    {
-                        int b = mFrame.getInt(indexSet);
-                        C[i][j] = stepSizes.getStepSizes()[m - 3] * (b - COEFFICIENT_OFFSET[indexSet.length]);
-                    }
-                }
+                coefficients[i][j] = decodeCoefficient(harmonics[j - 1], stepSizes, indexes);
             }
         }
+    }
 
+    private float[] createPredictionResiduals(int lCount, float[][] coefficients, int[][] harmonicAllocations)
+    {
         //Alg 73 & 74 - inverse DCT of C to produce c and transfer results to Tl
-        float[] T = new float[L + 1];
-
+        float[] residuals = new float[lCount + 1];
         int l = 1;
 
         for(int i = 1; i <= 6; i++) /* J-Block index */
         {
-            int Ji = harmonicAllocations[i - 1].length;
+            int harmonicCount = harmonicAllocations[i - 1].length;
 
-            for(int j = 1; j <= Ji; j++)
+            for(int j = 1; j <= harmonicCount; j++)
             {
-                T[l] = C[i][1];
+                residuals[l] = coefficients[i][1];
 
-                if(Ji >= 2)
+                for(int k = 2; k <= harmonicCount; k++)
                 {
-                    for(int k = 2; k <= Ji; k++)
-                    {
-                        T[l] += 2.0f * C[i][k] * (float)Math.cos((Math.PI * (k - 1) * (j - 0.5f)) / Ji);
-                    }
+                    residuals[l] += 2.0f * coefficients[i][k] * (float)Math.cos((Math.PI * (k - 1) * (j - 0.5f)) /
+                        harmonicCount);
                 }
 
                 l++;
             }
         }
 
-        return T;
+        return residuals;
+    }
+
+    private float decodeCoefficient(int harmonic, StepSizes stepSizes, QuantizedValueIndexes indexes)
+    {
+        //Note: both the step sizes and quantized value indexes arrays are zero-based indexes so we have to subtract 3
+        // from the harmonic value to align with the arrays
+        int[] indexSet = indexes.getIndexes()[harmonic - 3];
+
+        if(indexSet.length == 0)
+        {
+            return 0.0f;
+        }
+
+        int b = mFrame.getInt(indexSet);
+        return stepSizes.getStepSizes()[harmonic - 3] * (b - COEFFICIENT_OFFSET[indexSet.length]);
     }
 
     /**
