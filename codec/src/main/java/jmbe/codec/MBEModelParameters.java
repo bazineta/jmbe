@@ -270,9 +270,11 @@ public abstract class MBEModelParameters
      */
     public boolean hasVoicedBands()
     {
-        for(boolean voiced : getVoicingDecisions())
+        boolean[] voicingDecisions = getVoicingDecisions();
+
+        for(int l = 1; l <= getL(); l++)
         {
-            if(voiced)
+            if(voicingDecisions[l])
             {
                 return true;
             }
