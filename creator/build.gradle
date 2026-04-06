@@ -4,7 +4,10 @@ plugins {
     id 'org.beryx.runtime' version '1.12.7'
 }
 
-sourceCompatibility = '8'
+java {
+    sourceCompatibility = JavaVersion.VERSION_26
+    targetCompatibility = JavaVersion.VERSION_26
+}
 
 repositories {
     mavenCentral()
@@ -20,12 +23,12 @@ dependencies {
 }
 
 application {
-    mainClassName = "io.github.dsheirer.jmbe.creator.Creator"
+    mainClass = "io.github.dsheirer.jmbe.creator.Creator"
 }
 
 jar {
     manifest {
-        attributes 'Implementation-Title': "${project.archivesBaseName}",
+        attributes 'Implementation-Title': "${base.archivesName.get()}",
                    'Implementation-Version': archiveVersion
     }
     from rootProject.file('LICENSE')

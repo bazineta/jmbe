@@ -15,7 +15,9 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.12'
 }
 
-archivesBaseName = 'jmbe'
+base {
+    archivesName = 'jmbe'
+}
 
 jar {
     manifest {
