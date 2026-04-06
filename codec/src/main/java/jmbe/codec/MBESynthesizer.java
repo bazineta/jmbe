@@ -404,24 +404,6 @@ public abstract class MBESynthesizer
     }
 
     /**
-     * Resizes the voicing decisions array, as needed, padding the newly
-     * added indices with a 0-false value
-     */
-    private boolean[] resize(boolean[] voicingDecisions, int size)
-    {
-        if(voicingDecisions.length != size)
-        {
-            boolean[] resized = new boolean[size];
-
-            System.arraycopy(voicingDecisions, 0, resized, 0, voicingDecisions.length);
-
-            return resized;
-        }
-
-        return voicingDecisions;
-    }
-
-    /**
      * Reconstructs the voiced audio components using the model parameters from both the current and previous imbe frames.
      *
      * @param currentFrame - voice parameters
@@ -460,8 +442,8 @@ public abstract class MBESynthesizer
         int previousL = previousFrame.getL();
         int maxL = Math.max(currentL, previousL);
 
-        boolean[] currentVoicing = resize(currentFrame.getVoicingDecisions(), maxL + 1);
-        boolean[] previousVoicing = resize(previousFrame.getVoicingDecisions(), maxL + 1);
+        boolean[] currentVoicing = currentFrame.getVoicingDecisions();
+        boolean[] previousVoicing = previousFrame.getVoicingDecisions();
 
         //Alg #128 & #129 - enhanced spectral amplitudes for current and previous frames outside range of 1 - L are set
         // to zero.  Below, in the audio generation loop, we control access to these arrays through the voicing
@@ -503,7 +485,10 @@ public abstract class MBESynthesizer
         {
             for(int l = 1; l <= maxL; l++)
             {
-                if(currentVoicing[l] && previousVoicing[l])
+                boolean currentVoiced = l <= currentL && currentVoicing[l];
+                boolean previousVoiced = l <= previousL && previousVoicing[l];
+
+                if(currentVoiced && previousVoiced)
                 {
                     if(l >= 8 || exceedsThreshold)
                     {
@@ -540,11 +525,11 @@ public abstract class MBESynthesizer
                         voiced[n] += (float)(2.0f * (amplitude * Math.cos(phase)));
                     }
                 }
-                else if(!currentVoicing[l] && previousVoicing[l])
+                else if(!currentVoiced && previousVoiced)
                 {
                     voiced[n] += getPreviousOnlyVoicedContribution(l, n, previousM, previousFrequency);
                 }
-                else if(currentVoicing[l] && !previousVoicing[l])
+                else if(currentVoiced && !previousVoiced)
                 {
                     voiced[n] += getCurrentOnlyVoicedContribution(l, n, currentM, currentFrequency, currentPhaseO);
                 }
