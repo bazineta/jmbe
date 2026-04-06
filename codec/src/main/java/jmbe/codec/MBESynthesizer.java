@@ -192,21 +192,6 @@ public abstract class MBESynthesizer
     }
 
     /**
-     * Unused.  Was previously used to develop value for constant UNVOICED_SCALING_COEFFICIENT
-     */
-    public static float getUnvoicedScalingCoefficient()
-    {
-        float sum_wr = 0.0f;
-
-        for(int x = -110; x <= 110; x++)
-        {
-            sum_wr += (pitchRefinementWindow(x));
-        }
-
-        return sum_wr * (float)Math.pow((SYNTHESIS_WINDOW_ENERGY / PITCH_REFINEMENT_WINDOW_ENERGY), 0.5f);
-    }
-
-    /**
      * Generates 160 samples (20 ms) of voice audio using the model parameters
      *
      * @param parameters to use in generating the voice frame
