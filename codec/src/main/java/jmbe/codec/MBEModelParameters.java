@@ -380,7 +380,12 @@ public abstract class MBEModelParameters
             denominator += (enhancedSpectralAmplitudes[l] * enhancedSpectralAmplitudes[l]);
         }
 
-        float y = (float)Math.sqrt(RM[0] / denominator);
+        float y = 0.0f;
+
+        if(denominator > 0.0f)
+        {
+            y = (float)Math.sqrt(RM[0] / denominator);
+        }
 
         /* Algorithm #110 - scale enhanced amplitudes to remove energy differential */
         for(int l = 1; l <= L; l++)
@@ -466,7 +471,7 @@ public abstract class MBEModelParameters
         setAmplitudeThreshold(Tm);
 
         //Algorithm #116 - scale enhanced spectral amplitudes if amplitude measure is greater than amplitude threshold
-        if(Am > Tm)
+        if(Am > 0.0f && Am > Tm)
         {
             float scale = Tm / Am;
 
