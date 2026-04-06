@@ -2,6 +2,18 @@ Copyright (C) 2015-2020 Dennis Sheirer
 
 # jmbe - Java Multi-Band Excitation library
 
+## Fork Notes
+
+This fork is maintained for use with sdrtrunk and focuses on practical codec maintenance:
+
+* lint cleanup
+* significant tuning pass undertaken
+* reduced allocation pressure in the AMBE/IMBE synthesis paths
+* build compatibility updates for current Gradle/JDK toolchains
+* a few minor bug fixes
+
+The original patent notice and upstream usage notes remain below.
+
 Audio conversion library for decoding MBE encoded audio frames.
   
 Decodes IMBE 144-bit and AMBE 72-bit encoded 20 millisecond audio frames to 8 kHz 16-bit mono PCM encoded audio.
