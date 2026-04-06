@@ -503,8 +503,51 @@ public abstract class MBESynthesizer
         {
             for(int l = 1; l <= maxL; l++)
             {
-                voiced[n] += getVoicedContribution(currentVoicing, previousVoicing, l, exceedsThreshold, n, previousM,
-                    currentM, previousFrequency, currentFrequency, currentPhaseO, phaseOffsetPerFrame);
+                if(currentVoicing[l] && previousVoicing[l])
+                {
+                    if(l >= 8 || exceedsThreshold)
+                    {
+                        //Alg #133
+                        float previousPhase = mPreviousPhaseO[l] + (previousFrequency * n * l);
+                        float previousContribution =
+                            (float)(2.0f * (synthesisWindow(n) * previousM[l] * Math.cos(previousPhase)));
+
+                        float currentPhase = currentPhaseO[l] + (currentFrequency * (n - SAMPLES_PER_FRAME) * l);
+                        float currentContribution = (float)(2.0f *
+                            (synthesisWindow(n - SAMPLES_PER_FRAME) * currentM[l] * Math.cos(currentPhase)));
+
+                        voiced[n] += previousContribution + currentContribution;
+                    }
+                    else
+                    {
+                        //Alg #135 - amplitude function
+                        //Performs linear interpolation of the harmonic's amplitude from previous frame to current
+                        float amplitude =
+                            previousM[l] + (((float)n / (float)SAMPLES_PER_FRAME) * (currentM[l] - previousM[l]));
+
+                        //Alg #137
+                        float ol = (currentPhaseO[l] - mPreviousPhaseO[l] - (phaseOffsetPerFrame * l));
+
+                        //Alg #138
+                        float wl = (ol - (TWO_PI * (float)Math.floor((ol + (float)Math.PI) / TWO_PI))) / 160.0f;
+
+                        //Alg #136 - phase function
+                        float phase = mPreviousPhaseO[l] +
+                            (((previousFrequency * l) + wl) * n) +
+                            ((currentFrequency - previousFrequency) * ((l *  n * n) / 320.0f));
+
+                        //Alg #134
+                        voiced[n] += (float)(2.0f * (amplitude * Math.cos(phase)));
+                    }
+                }
+                else if(!currentVoicing[l] && previousVoicing[l])
+                {
+                    voiced[n] += getPreviousOnlyVoicedContribution(l, n, previousM, previousFrequency);
+                }
+                else if(currentVoicing[l] && !previousVoicing[l])
+                {
+                    voiced[n] += getCurrentOnlyVoicedContribution(l, n, currentM, currentFrequency, currentPhaseO);
+                }
             }
         }
 
@@ -512,65 +555,6 @@ public abstract class MBESynthesizer
         mPreviousPhaseO = currentPhaseO;
 
         return voiced;
-    }
-
-    private float getVoicedContribution(boolean[] currentVoicing, boolean[] previousVoicing, int l, boolean exceedsThreshold,
-        int n, float[] previousM, float[] currentM, float previousFrequency, float currentFrequency, float[] currentPhaseO,
-        float phaseOffsetPerFrame)
-    {
-        if(currentVoicing[l] && previousVoicing[l])
-        {
-            return getSharedVoicedContribution(l, exceedsThreshold, n, previousM, currentM, previousFrequency,
-                currentFrequency, currentPhaseO, phaseOffsetPerFrame);
-        }
-
-        if(!currentVoicing[l] && previousVoicing[l])
-        {
-            return getPreviousOnlyVoicedContribution(l, n, previousM, previousFrequency);
-        }
-
-        if(currentVoicing[l] && !previousVoicing[l])
-        {
-            return getCurrentOnlyVoicedContribution(l, n, currentM, currentFrequency, currentPhaseO);
-        }
-
-        //Alg #130 - harmonics that are unvoiced in both the current and previous frames contribute nothing
-        return 0.0f;
-    }
-
-    private float getSharedVoicedContribution(int l, boolean exceedsThreshold, int n, float[] previousM, float[] currentM,
-        float previousFrequency, float currentFrequency, float[] currentPhaseO, float phaseOffsetPerFrame)
-    {
-        if(l >= 8 || exceedsThreshold)
-        {
-            //Alg #133
-            float previousPhase = mPreviousPhaseO[l] + (previousFrequency * n * l);
-            float previousContribution = (float)(2.0f * (synthesisWindow(n) * previousM[l] * Math.cos(previousPhase)));
-
-            float currentPhase = currentPhaseO[l] + (currentFrequency * (n - SAMPLES_PER_FRAME) * l);
-            float currentContribution = (float)(2.0f *
-                (synthesisWindow(n - SAMPLES_PER_FRAME) * currentM[l] * Math.cos(currentPhase)));
-
-            return previousContribution + currentContribution;
-        }
-
-        //Alg #135 - amplitude function
-        //Performs linear interpolation of the harmonic's amplitude from previous frame to current
-        float amplitude = previousM[l] + (((float)n / (float)SAMPLES_PER_FRAME) * (currentM[l] - previousM[l]));
-
-        //Alg #137
-        float ol = (currentPhaseO[l] - mPreviousPhaseO[l] - (phaseOffsetPerFrame * l));
-
-        //Alg #138
-        float wl = (ol - (TWO_PI * (float)Math.floor((ol + (float)Math.PI) / TWO_PI))) / 160.0f;
-
-        //Alg #136 - phase function
-        float phase = mPreviousPhaseO[l] +
-            (((previousFrequency * l) + wl) * n) +
-            ((currentFrequency - previousFrequency) * ((l *  n * n) / 320.0f));
-
-        //Alg #134
-        return (float)(2.0f * (amplitude * Math.cos(phase)));
     }
 
     private float getPreviousOnlyVoicedContribution(int l, int n, float[] previousM, float previousFrequency)
