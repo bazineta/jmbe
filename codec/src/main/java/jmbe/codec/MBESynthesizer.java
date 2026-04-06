@@ -82,10 +82,6 @@ public abstract class MBESynthesizer
         0.048915f, 0.044573f, 0.040451f, 0.036546f, 0.032852f, 0.029365f, 0.026081f, 0.022995f, 0.020102f, 0.017397f,
         0.014873f
     };
-    // Derived from the fixed synthesis/pitch-refinement window tables above. If either table changes, these values
-    // must be recalculated to keep getUnvoicedScalingCoefficient() correct.
-    private static final float SYNTHESIS_WINDOW_ENERGY = 142.43f;
-    private static final float PITCH_REFINEMENT_WINDOW_ENERGY = 80.683624f;
     // Derived from the fixed synthesis window table above for n=0..159. If that table changes, these values must be
     // recalculated to keep the weighted overlap-add denominator correct.
     private static final float[] UNVOICED_OVERLAP_DENOMINATORS = new float[]{
