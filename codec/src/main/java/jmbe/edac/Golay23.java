@@ -69,14 +69,7 @@ public class Golay23
 		{
 			if( index != -1 )
 			{
-				/* restore the previous flipped bit */
-				if( index > 0 )
-				{
-					copy.flip( index - 1 );
-				}
-				
-				copy.flip( index );
-				
+				prepareCorrectionCopy( copy, index );
 				syndromeWeight = MAX_CORRECTABLE_ERRORS - 1;
 			}
 			
@@ -84,30 +77,11 @@ public class Golay23
 			
 			if( syndrome > 0 )
 			{
-				for( int i = 0; i < 23; i++ )
+				int errorCount = attemptCorrection( frame, startIndex, copy, syndromeWeight, syndrome );
+
+				if( errorCount >= 0 )
 				{
-					if( Integer.bitCount( syndrome ) <= syndromeWeight )
-					{
-						copy.xor( 12, 11, syndrome );
-						
-						copy.rotateRight( i, 0, 22 );
-
-						int corrected = copy.getInt( 0, 22 );
-						int original = frame.getInt( startIndex, startIndex + 22 );
-						int errorCount = Integer.bitCount( original ^ corrected );
-
-						if( errorCount <= 3 )
-						{
-							frame.load( startIndex, 23, corrected );
-						}
-
-						return errorCount;
-					}
-					else
-					{
-						copy.rotateLeft( 0, 22 );
-						syndrome = getSyndrome( copy, 0 );
-					}
+					return errorCount;
 				}
 				
 				index++;
@@ -116,6 +90,46 @@ public class Golay23
 
 		/* Return an error count greater than 3 to indicate failed correction attempt */
 		return 4;
+	}
+
+	private static void prepareCorrectionCopy( BinaryFrame copy, int index )
+	{
+		/* restore the previous flipped bit */
+		if( index > 0 )
+		{
+			copy.flip( index - 1 );
+		}
+
+		copy.flip( index );
+	}
+
+	private static int attemptCorrection( BinaryFrame frame, int startIndex, BinaryFrame copy, int syndromeWeight,
+		int syndrome )
+	{
+		for( int i = 0; i < 23; i++ )
+		{
+			if( Integer.bitCount( syndrome ) <= syndromeWeight )
+			{
+				copy.xor( 12, 11, syndrome );
+				copy.rotateRight( i, 0, 22 );
+
+				int corrected = copy.getInt( 0, 22 );
+				int original = frame.getInt( startIndex, startIndex + 22 );
+				int errorCount = Integer.bitCount( original ^ corrected );
+
+				if( errorCount <= 3 )
+				{
+					frame.load( startIndex, 23, corrected );
+				}
+
+				return errorCount;
+			}
+
+			copy.rotateLeft( 0, 22 );
+			syndrome = getSyndrome( copy, 0 );
+		}
+
+		return -1;
 	}
 
 	private static int getSyndrome( BinaryFrame frame, int startIndex )

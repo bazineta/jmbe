@@ -96,14 +96,7 @@ public class Golay24
         {
             if(index != -1)
             {
-                /* restore the previous flipped bit */
-                if(index > 0)
-                {
-                    message.flip(index - 1);
-                }
-
-                message.flip(index);
-
+                prepareCorrectionMessage(message, index);
                 syndromeWeight = 2;
             }
 
@@ -111,36 +104,11 @@ public class Golay24
 
             if(syndrome > 0)
             {
-                for(int i = 0; i < 23; i++)
+                errors = attemptCorrection(message, startIndex, syndromeWeight, syndrome, index, original);
+
+                if(errors >= 0)
                 {
-
-                    errors = Integer.bitCount(syndrome);
-
-                    if(errors <= syndromeWeight)
-                    {
-                        message.xor(12, 11, syndrome);
-
-                        message.rotateRight(i, startIndex, startIndex + 22);
-
-                        if(index >= 0)
-                        {
-                            errors++;
-                        }
-
-                        int corrected = message.getInt(0, 22);
-
-                        if(Integer.bitCount(original ^ corrected) > 3)
-                        {
-                            return 4;
-                        }
-
-                        return errors;
-                    }
-                    else
-                    {
-                        message.rotateLeft(startIndex, startIndex + 22);
-                        syndrome = getSyndrome(message, startIndex);
-                    }
+                    return errors;
                 }
 
                 index++;
@@ -148,6 +116,51 @@ public class Golay24
         }
 
         return 2;
+    }
+
+    private static void prepareCorrectionMessage(BinaryFrame message, int index)
+    {
+        /* restore the previous flipped bit */
+        if(index > 0)
+        {
+            message.flip(index - 1);
+        }
+
+        message.flip(index);
+    }
+
+    private static int attemptCorrection(BinaryFrame message, int startIndex, int syndromeWeight, int syndrome, int index,
+        int original)
+    {
+        for(int i = 0; i < 23; i++)
+        {
+            int errors = Integer.bitCount(syndrome);
+
+            if(errors <= syndromeWeight)
+            {
+                message.xor(12, 11, syndrome);
+                message.rotateRight(i, startIndex, startIndex + 22);
+
+                if(index >= 0)
+                {
+                    errors++;
+                }
+
+                int corrected = message.getInt(0, 22);
+
+                if(Integer.bitCount(original ^ corrected) > 3)
+                {
+                    return 4;
+                }
+
+                return errors;
+            }
+
+            message.rotateLeft(startIndex, startIndex + 22);
+            syndrome = getSyndrome(message, startIndex);
+        }
+
+        return -1;
     }
 
     private static int getSyndrome(BinaryFrame message, int startIndex)
