@@ -12,7 +12,7 @@ dependencies {
     implementation 'com.github.wendykierp:JTransforms:3.1'
     implementation 'pl.edu.icm:JLargeArrays:1.6'
     implementation project(':api')
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation 'junit:junit:4.12'
 }
 
 base {
