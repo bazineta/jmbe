@@ -21,6 +21,8 @@ package jmbe.codec;
 
 import org.jtransforms.fft.FloatFFT_1D;
 
+import java.util.Arrays;
+
 /**
  * Base Multi-Band Excitation (MBE) synthesizer
  */
@@ -107,9 +109,10 @@ public abstract class MBESynthesizer
         1.00000000f, 1.00000000f, 1.00000000f, 1.00000000f, 1.00000000f, 1.00000000f, 1.00000000f, 1.00000000f,
     };
 
-    private WhiteNoiseGenerator mWhiteNoiseGenerator = new WhiteNoiseGenerator();
-    private MBENoiseSequenceGenerator mMBENoiseSequenceGenerator = new MBENoiseSequenceGenerator();
-    private FloatFFT_1D mFFT = new FloatFFT_1D(256);
+    private final WhiteNoiseGenerator mWhiteNoiseGenerator = new WhiteNoiseGenerator();
+    private final MBENoiseSequenceGenerator mMBENoiseSequenceGenerator = new MBENoiseSequenceGenerator();
+    private final FloatFFT_1D mFFT = new FloatFFT_1D(256);
+    private final float[] mDftBinScalor = new float[128];
     private float[] mPreviousPhaseO = new float[57];
     private float[] mPreviousPhaseV = new float[57];
     private float[] mPreviousUw = new float[256];
@@ -198,8 +201,9 @@ public abstract class MBESynthesizer
         //Alg #117 - generate white noise samples.
         float[] u = mMBENoiseSequenceGenerator.nextBuffer();
 
-        float[] unvoiced = getUnvoiced(parameters, u);
         float[] voiced = getVoiced(parameters, u);
+        applyWindowInPlace(u);
+        float[] unvoiced = getUnvoicedFromWindowed(parameters, u);
 
         float[] audio = new float[160];
 
@@ -259,6 +263,14 @@ public abstract class MBESynthesizer
         return windowed;
     }
 
+    private void applyWindowInPlace(float[] whiteNoise)
+    {
+        for(int x = 0; x < whiteNoise.length; x++)
+        {
+            whiteNoise[x] *= synthesisWindow(x - 128);
+        }
+    }
+
     /**
      * Generates the unvoiced component of the audio signal using a white noise
      * generator where the frequency components corresponding to the voiced
@@ -270,7 +282,11 @@ public abstract class MBESynthesizer
     public float[] getUnvoiced(MBEModelParameters parameters, float[] whiteNoiseSamples)
     {
         float[] Uw = applyWindow(whiteNoiseSamples);
+        return getUnvoicedFromWindowed(parameters, Uw);
+    }
 
+    private float[] getUnvoicedFromWindowed(MBEModelParameters parameters, float[] Uw)
+    {
         //Alg #122 and #123 - generate the 256 FFT bins to L frequency band mapping from the fundamental frequency
         boolean[] voicedBands = parameters.getVoicingDecisions();
         float[] M = parameters.getEnhancedSpectralAmplitudes();
@@ -313,7 +329,7 @@ public abstract class MBESynthesizer
         // the average, and then taking the square root to get the amplitude average (a^2 + b^2 = c^2).  Calculate this
         // value for each of the unvoiced bands and apply the unvoiced scaling coefficient and the decoded amplitude for
         // the band.
-        float[] dftBinScalor = new float[128];
+        Arrays.fill(mDftBinScalor, 0.0f);
 
         for(int l = 1; l <= parameters.getL(); l++)
         {
@@ -325,13 +341,13 @@ public abstract class MBESynthesizer
                 {
                     if(n < 128)
                     {
-                        dftBinScalor[n] = scalor;
+                        mDftBinScalor[n] = scalor;
                     }
                 }
             }
         }
 
-        return dftBinScalor;
+        return mDftBinScalor;
     }
 
     private float getUnvoicedBandScalar(float amplitude, int minimum, int maximum, float[] dftBins)
