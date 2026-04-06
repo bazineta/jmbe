@@ -23,22 +23,14 @@ import jmbe.audio.AudioWithMetadata;
 import jmbe.codec.FrameType;
 import jmbe.iface.IAudioCodec;
 import jmbe.iface.IAudioWithMetadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Audio converter for AMBE frames encoded at 3600 bps with 2450 bps data and 1250 bps FEC
  */
 public class AMBEAudioCodec implements IAudioCodec
 {
-    private final static Logger mLog = LoggerFactory.getLogger(AMBEAudioCodec.class);
-
     public static final String CODEC_NAME = "AMBE 3600 x 2450";
     private AMBESynthesizer mSynthesizer = new AMBESynthesizer();
-
-    public AMBEAudioCodec()
-    {
-    }
 
     /**
      * Converts the AMBE frame data into PCM audio samples at 8kHz 16-bit rate.

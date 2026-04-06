@@ -26,10 +26,6 @@ public class MBENoiseSequenceGenerator
     private float mSample = 3147;
     private float[] mCurrentBuffer = new float[256];
 
-    public MBENoiseSequenceGenerator()
-    {
-    }
-
     public float next()
     {
         float next = mSample;

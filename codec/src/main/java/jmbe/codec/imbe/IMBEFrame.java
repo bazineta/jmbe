@@ -22,8 +22,6 @@ package jmbe.codec.imbe;
 import jmbe.binary.BinaryFrame;
 import jmbe.edac.Golay23;
 import jmbe.edac.Hamming15;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -31,8 +29,6 @@ import java.util.Arrays;
 
 public class IMBEFrame
 {
-    private final static Logger mLog = LoggerFactory.getLogger(IMBEFrame.class);
-
     public static final float LOG_2 = (float)Math.log(2.0);
 
     public static final int[] RANDOMIZER_SEED = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};

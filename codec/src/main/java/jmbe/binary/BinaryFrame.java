@@ -1,8 +1,8 @@
 package jmbe.binary;
 
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
+import java.util.Objects;
 
 /*******************************************************************************
  *     jmbe - Java MBE Library
@@ -198,6 +198,7 @@ public class BinaryFrame extends BitSet
         this.set(mPointer++, value);
     }
 
+    @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
@@ -208,6 +209,28 @@ public class BinaryFrame extends BitSet
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if(this == obj)
+        {
+            return true;
+        }
+
+        if(!(obj instanceof BinaryFrame other))
+        {
+            return false;
+        }
+
+        return mSize == other.mSize && mPointer == other.mPointer && super.equals(obj);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(super.hashCode(), mSize, mPointer);
     }
 
     /**
@@ -275,7 +298,6 @@ public class BinaryFrame extends BitSet
             if(get(x))
             {
                 value++;
-                ;
             }
 
             value = Integer.rotateLeft(value, 1);
@@ -406,13 +428,13 @@ public class BinaryFrame extends BitSet
         {
             int value = getInt(bits);
 
-            return String.format("%0" + digitDisplayCount + "X", value);
+            return String.format(getHexFormat(digitDisplayCount), value);
         }
         else if(bits.length <= 64)
         {
             long value = getLong(bits);
 
-            return String.format("%0" + digitDisplayCount + "X", value);
+            return String.format(getHexFormat(digitDisplayCount), value);
         }
         else
         {
@@ -429,19 +451,24 @@ public class BinaryFrame extends BitSet
         {
             int value = getInt(msb, lsb);
 
-            return String.format("%0" + digitDisplayCount + "X", value);
+            return String.format(getHexFormat(digitDisplayCount), value);
         }
         else if(length <= 64)
         {
             long value = getLong(msb, lsb);
 
-            return String.format("%0" + digitDisplayCount + "X", value);
+            return String.format(getHexFormat(digitDisplayCount), value);
         }
         else
         {
             throw new IllegalArgumentException("BitSetBuffer.getHex() "
                 + "maximum array length is 64 bits");
         }
+    }
+
+    private String getHexFormat(int digitDisplayCount)
+    {
+        return String.format("%%0%dX", digitDisplayCount);
     }
 
     /**
@@ -475,7 +502,6 @@ public class BinaryFrame extends BitSet
                 if(get(x))
                 {
                     value++;
-                    ;
                 }
             }
         }
@@ -488,7 +514,6 @@ public class BinaryFrame extends BitSet
                 if(get(x))
                 {
                     value++;
-                    ;
                 }
             }
         }

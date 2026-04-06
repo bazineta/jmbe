@@ -20,7 +20,6 @@
 package jmbe.codec;
 
 import java.util.Arrays;
-import java.util.Random;
 
 /**
  * White Noise Generator

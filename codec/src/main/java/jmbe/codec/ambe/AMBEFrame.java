@@ -23,8 +23,6 @@ import jmbe.binary.BinaryFrame;
 import jmbe.codec.FrameType;
 import jmbe.edac.Golay23;
 import jmbe.edac.Golay24;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -34,8 +32,6 @@ import java.util.Arrays;
  */
 public class AMBEFrame
 {
-    private final static Logger mLog = LoggerFactory.getLogger(AMBEFrame.class);
-
     private static final int[] VECTOR_C0 = {0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 1, 5,
         9, 13, 17, 21};
     private static final int[] VECTOR_C1 = {25, 29, 33, 37, 41, 45, 49, 53, 57, 61, 65, 69, 2, 6, 10, 14, 18, 22, 26,

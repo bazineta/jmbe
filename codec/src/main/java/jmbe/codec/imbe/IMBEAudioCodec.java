@@ -21,13 +21,9 @@ package jmbe.codec.imbe;
 import jmbe.audio.AudioWithoutMetadata;
 import jmbe.iface.IAudioCodec;
 import jmbe.iface.IAudioWithMetadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class IMBEAudioCodec implements IAudioCodec
 {
-    private static final Logger mLog = LoggerFactory.getLogger(IMBEAudioCodec.class);
-
     public static final String CODEC_NAME = "IMBE";
 
     private IMBESynthesizer mSynthesizer;
