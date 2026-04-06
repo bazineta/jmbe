@@ -94,10 +94,9 @@ public class Hamming15
 			case 15:
 				frame.flip( startIndex ); //Data 11
 				return 1;
+			default:
+				throw new IllegalStateException("Unexpected syndrome: " + syndrome);
 		}
-
-		/* We'll never get to here */
-		return 2;
 	}
 
 	/**
