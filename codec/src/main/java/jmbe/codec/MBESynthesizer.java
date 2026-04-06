@@ -194,12 +194,6 @@ public abstract class MBESynthesizer
      */
     public float[] getVoice(MBEModelParameters parameters)
     {
-        float amp = 0;
-        for(float amplitude: parameters.getEnhancedSpectralAmplitudes())
-        {
-            amp += amplitude;
-        }
-
         //Alg #117 - generate white noise samples.
         float[] u = mMBENoiseSequenceGenerator.nextBuffer();
 
