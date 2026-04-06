@@ -367,7 +367,19 @@ public class AMBEModelParameters extends MBEModelParameters
         for(int l = 1; l <= getL(); l++)
         {
             //Alg 44 & 45
-            aklPrevious = (kFloor[l] == 0 ? previousA[1] : (kFloor[l] <= previousL ? previousA[kFloor[l]] : previousA[previousL]));
+            if(kFloor[l] == 0)
+            {
+                aklPrevious = previousA[1];
+            }
+            else if(kFloor[l] <= previousL)
+            {
+                aklPrevious = previousA[kFloor[l]];
+            }
+            else
+            {
+                aklPrevious = previousA[previousL];
+            }
+
             lPlus1 = l < getL() ? (l + 1) : getL();
             aklPlus1Previous = ((kFloor[lPlus1]) <= previousL ? previousA[kFloor[lPlus1]] : previousA[previousL]);
 
