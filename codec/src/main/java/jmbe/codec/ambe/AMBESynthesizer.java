@@ -124,14 +124,16 @@ public class AMBESynthesizer extends MBESynthesizer
             return muteFrame();
         }
 
-        mPreviousFrame = parameters;
-
         if(parameters.isErasureFrame())
         {
+            mPreviousFrame = parameters;
             return getWhiteNoise();
         }
 
-        return getVoice(parameters);
+        float[] audio = getVoice(parameters);
+        mPreviousFrame = parameters;
+
+        return audio;
     }
 
     private float[] muteFrame()
