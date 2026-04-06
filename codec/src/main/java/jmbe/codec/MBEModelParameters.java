@@ -287,10 +287,11 @@ public abstract class MBEModelParameters
     public int getUnvoicedBandCount()
     {
         int unvoiced = 0;
+        boolean[] voicingDecisions = getVoicingDecisions();
 
-        for(boolean voiced: getVoicingDecisions())
+        for(int l = 1; l <= getL(); l++)
         {
-            if(!voiced)
+            if(!voicingDecisions[l])
             {
                 unvoiced++;
             }
