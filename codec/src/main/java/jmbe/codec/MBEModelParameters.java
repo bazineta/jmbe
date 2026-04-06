@@ -412,27 +412,12 @@ public abstract class MBEModelParameters
      */
     private void applyAdaptiveSmoothing(int previousAmplitudeThresholdTM)
     {
-        float VM;
-
         float[] enhancedSpectralAmplitudes = getEnhancedSpectralAmplitudes();
 
         /* Algorithm #112 - calculate adaptive threshold */
-        if(getErrorRate() <= 0.005 && getErrorCountTotal() <= 4)
+        if(getErrorRate() > 0.005 || getErrorCountTotal() > 4)
         {
-            VM = Float.MAX_VALUE;
-        }
-        else
-        {
-            float energy = (float)Math.pow(getLocalEnergy(), 0.375f);
-
-            if(getErrorRate() <= 0.0125f && getErrorCount4() == 0)
-            {
-                VM = (45.255f * energy) / (float)Math.exp(277.26f * getErrorRate());
-            }
-            else
-            {
-                VM = 1.414f * energy;
-            }
+            float VM = getAdaptiveThreshold();
 
             //Voicing decisions only have to be smoothed in the presence of errors
             boolean[] voicingDecisions = getVoicingDecisions();
@@ -482,5 +467,17 @@ public abstract class MBEModelParameters
         }
 
         setEnhancedSpectralAmplitudes(enhancedSpectralAmplitudes);
+    }
+
+    private float getAdaptiveThreshold()
+    {
+        float energy = (float)Math.pow(getLocalEnergy(), 0.375f);
+
+        if(getErrorRate() <= 0.0125f && getErrorCount4() == 0)
+        {
+            return (45.255f * energy) / (float)Math.exp(277.26f * getErrorRate());
+        }
+
+        return 1.414f * energy;
     }
 }
