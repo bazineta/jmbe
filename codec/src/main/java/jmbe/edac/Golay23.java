@@ -146,23 +146,4 @@ public class Golay23
 		return calculated;
 	}
 	
-	public static void main( String[] args )
-	{
-		for( int x = 0; x < 0x7FFFFF; x++ )
-		{
-			BinaryFrame frame = new BinaryFrame( 23 );
-
-			frame.load( 0, 23, x );
-			
-			int errors = checkAndCorrect( frame, 0 );
-			
-			System.out.println( "x:" + x + " errors:" + errors );
-			
-			if( errors == 4 )
-			{
-				System.out.println( "Value " + x + " has 4 bit errors" );
-				return;
-			}
-		}
-	}
 }
