@@ -41,6 +41,7 @@ public enum DifferentialGain
     G30(5.777581f, 1.10f),
     G31(6.874496f, 1.0f);
 
+    private static final DifferentialGain[] VALUES = values();
     private float mGain;
     private float mAdjustment;
 
@@ -59,7 +60,7 @@ public enum DifferentialGain
     {
         if(0 <= value && value <= 31)
         {
-            return DifferentialGain.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Value must be in range 0-31.  Unsupported value: " + value);

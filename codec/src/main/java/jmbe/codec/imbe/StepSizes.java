@@ -19,9 +19,6 @@
 
 package jmbe.codec.imbe;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 /**
  * Defines the deltaM step sizes for each of the b3 through b(L + 1) prediction residuals stored in indexes 0
  * through (L + 1 - 3).
@@ -83,13 +80,13 @@ public enum StepSizes
 
     private int mL;
     private float[] mStepSizes;
-    private static Map<Integer,StepSizes> sLOOKUP_MAP = new TreeMap<>();
+    private static final StepSizes[] LOOKUP_TABLE = new StepSizes[57];
 
     static
     {
         for(StepSizes stepSizes : StepSizes.values())
         {
-            sLOOKUP_MAP.put(stepSizes.mL, stepSizes);
+            LOOKUP_TABLE[stepSizes.mL] = stepSizes;
         }
     }
 
@@ -113,7 +110,6 @@ public enum StepSizes
      */
     public static StepSizes fromL(int L)
     {
-        return sLOOKUP_MAP.get(L);
+        return 0 <= L && L < LOOKUP_TABLE.length ? LOOKUP_TABLE[L] : null;
     }
 }
-

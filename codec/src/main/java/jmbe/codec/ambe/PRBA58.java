@@ -134,6 +134,7 @@ public enum PRBA58
     V126(0.206535f, -0.086116f, 0.046640f, -0.097615f),
     V127(0.129759f, -0.081874f, 0.004693f, -0.073169f);
 
+    private static final PRBA58[] VALUES = values();
     private float mG5;
     private float mG6;
     private float mG7;
@@ -171,7 +172,7 @@ public enum PRBA58
     {
         if(0 <= value && value <= 127)
         {
-            return PRBA58.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Value must be in range 0-127.  Unsupported value: " + value);

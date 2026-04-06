@@ -22,6 +22,7 @@ public enum HOCB7
     V14(new float[] {-0.144910f, -0.238617f, -0.195206f, -0.063917f}),
     V15(new float[] {-0.024159f, -0.338822f, 0.003581f, 0.060995f});
 
+    private static final HOCB7[] VALUES = values();
     private float[] mCoefficients;
 
     HOCB7(float[] coefficients)
@@ -38,7 +39,7 @@ public enum HOCB7
     {
         if(0 <= value && value <= 15)
         {
-            return HOCB7.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Value must be in range 0-15.  Unsupported value: " + value);

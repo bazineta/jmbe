@@ -19,9 +19,6 @@
 
 package jmbe.codec.imbe;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 /**
  * Transmitted message indexes for each of the b(3) through b(L + 1) residual values stored in indexes starting at 0.
  */
@@ -78,14 +75,13 @@ public enum QuantizedValueIndexes
 
     private int mL;
     private int[][] mIndexes;
-
-    private static Map<Integer,QuantizedValueIndexes> sLOOKUP_MAP = new TreeMap<>();
+    private static final QuantizedValueIndexes[] LOOKUP_TABLE = new QuantizedValueIndexes[57];
 
     static
     {
         for(QuantizedValueIndexes indexes : QuantizedValueIndexes.values())
         {
-            sLOOKUP_MAP.put(indexes.mL, indexes);
+            LOOKUP_TABLE[indexes.mL] = indexes;
         }
     }
 
@@ -108,7 +104,6 @@ public enum QuantizedValueIndexes
      */
     public static QuantizedValueIndexes fromL(int L)
     {
-        return sLOOKUP_MAP.get(L);
+        return 0 <= L && L < LOOKUP_TABLE.length ? LOOKUP_TABLE[L] : null;
     }
 }
-

@@ -46,11 +46,7 @@ public class IMBEModelParameters extends MBEModelParameters
         setLog2SpectralAmplitudes(new float[lplus1]);
 
         float[] spectralAmplitudes = new float[lplus1];
-
-        for(int x = 0; x < lplus1; x++)
-        {
-            spectralAmplitudes[x] = 1.0f;
-        }
+        Arrays.fill(spectralAmplitudes, 1.0f);
 
         mSpectralAmplitudes = spectralAmplitudes;
         mEnhancedSpectralAmplitudes = spectralAmplitudes;
@@ -116,10 +112,7 @@ public class IMBEModelParameters extends MBEModelParameters
             setLog2SpectralAmplitudes(new float[lplus1]);
 
             float[] spectralAmplitudes = new float[lplus1];
-            for(int x = 0; x < lplus1; x++)
-            {
-                spectralAmplitudes[x] = 1.0f;
-            }
+            Arrays.fill(spectralAmplitudes, 1.0f);
 
             setSpectralAmplitudes(spectralAmplitudes, getLocalEnergy(), getAmplitudeThreshold());
         }

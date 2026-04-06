@@ -19,9 +19,6 @@
 
 package jmbe.codec.imbe;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 /**
  * J-block harmonic (L) allocations
  */
@@ -80,13 +77,13 @@ public enum HarmonicAllocation
 
     private int mL;
     private int[][] mAllocations;
-    private static final Map<Integer,HarmonicAllocation> LOOKUP_MAP = new TreeMap<>();
+    private static final HarmonicAllocation[] LOOKUP_TABLE = new HarmonicAllocation[57];
 
     static
     {
         for(HarmonicAllocation harmonicAllocation : HarmonicAllocation.values())
         {
-            LOOKUP_MAP.put(harmonicAllocation.mL, harmonicAllocation);
+            LOOKUP_TABLE[harmonicAllocation.mL] = harmonicAllocation;
         }
     }
 
@@ -106,7 +103,6 @@ public enum HarmonicAllocation
      */
     public static HarmonicAllocation fromL(int L)
     {
-        return LOOKUP_MAP.get(L);
+        return 0 <= L && L < LOOKUP_TABLE.length ? LOOKUP_TABLE[L] : null;
     }
 }
-

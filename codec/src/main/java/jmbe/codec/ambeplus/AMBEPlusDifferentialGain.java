@@ -89,6 +89,7 @@ public enum AMBEPlusDifferentialGain
     G62(5.352783f),
     G63(5.352783f);
 
+    private static final AMBEPlusDifferentialGain[] VALUES = values();
     private float mGain;
 
     AMBEPlusDifferentialGain(float gain)
@@ -105,7 +106,7 @@ public enum AMBEPlusDifferentialGain
     {
         if(0 <= value && value <= 63)
         {
-            return AMBEPlusDifferentialGain.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Value must be in range 0-63.  Unsupported value: " + value);

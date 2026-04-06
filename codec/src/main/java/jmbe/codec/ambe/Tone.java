@@ -1,9 +1,7 @@
 package jmbe.codec.ambe;
 
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * AMBE tones enumeration
@@ -171,13 +169,16 @@ public enum Tone
     private double mFrequency1;
     private double mFrequency2;
 
-    private static Map<Integer,Tone> sLOOKUP_MAP = new TreeMap<>();
+    private static final Tone[] LOOKUP_TABLE = new Tone[164];
 
     static
     {
         for(Tone tone: Tone.values())
         {
-            sLOOKUP_MAP.put(tone.mValue, tone);
+            if(0 <= tone.mValue && tone.mValue < LOOKUP_TABLE.length)
+            {
+                LOOKUP_TABLE[tone.mValue] = tone;
+            }
         }
     }
 
@@ -255,13 +256,11 @@ public enum Tone
      */
     public static Tone fromValue(int value)
     {
-        Tone tone = sLOOKUP_MAP.get(value);
-
-        if(tone == null)
+        if(value < 0 || value >= LOOKUP_TABLE.length || LOOKUP_TABLE[value] == null)
         {
-            tone = Tone.INVALID;
+            return Tone.INVALID;
         }
 
-        return tone;
+        return LOOKUP_TABLE[value];
     }
 }

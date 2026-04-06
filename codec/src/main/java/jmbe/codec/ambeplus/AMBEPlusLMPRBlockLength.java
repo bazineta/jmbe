@@ -82,6 +82,7 @@ public enum AMBEPlusLMPRBlockLength
     L55(new int[] {0, 11, 12, 15, 17}),
     L56(new int[] {0, 11, 13, 15, 17});
 
+    private static final AMBEPlusLMPRBlockLength[] VALUES = values();
     private int[] mBlockLengths;
 
     AMBEPlusLMPRBlockLength(int[] blockLengths)
@@ -98,7 +99,7 @@ public enum AMBEPlusLMPRBlockLength
     {
         if(0 <= value && value <= 56)
         {
-            return AMBEPlusLMPRBlockLength.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Value must be in range 0-56.  Unrecognized value: " + value);

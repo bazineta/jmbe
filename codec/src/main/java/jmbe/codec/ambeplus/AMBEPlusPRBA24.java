@@ -537,6 +537,7 @@ public enum AMBEPlusPRBA24
     V510(0.9375f, 0.7500f, 0.5000f),
     V511(1.3125f, 0.6875f, 0.6250f);
 
+    private static final AMBEPlusPRBA24[] VALUES = values();
     private float mG2;
     private float mG3;
     private float mG4;
@@ -567,7 +568,7 @@ public enum AMBEPlusPRBA24
     {
         if(0 <= value && value <= 511)
         {
-            return AMBEPlusPRBA24.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Value must be in range 0-511.  Unsupported value: " + value);

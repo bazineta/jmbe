@@ -24,6 +24,8 @@ import jmbe.codec.MBEModelParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+
 /**
  * AMBE frame voice model parameters
  */
@@ -100,10 +102,7 @@ public class AMBEModelParameters extends MBEModelParameters
         setLog2SpectralAmplitudes(log2SpectralAmplitudes);
         mSpectralAmplitudes = new float[getL() + 1];
 
-        for(int l = 0; l < mSpectralAmplitudes.length; l++)
-        {
-            mSpectralAmplitudes[l] = 1.0f;
-        }
+        Arrays.fill(mSpectralAmplitudes, 1.0f);
 
         mEnhancedSpectralAmplitudes = mSpectralAmplitudes;
 

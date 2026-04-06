@@ -19,9 +19,6 @@
 
 package jmbe.codec.imbe;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 /**
  * Message bit indexes for the encoded b2 gain value.
  *
@@ -82,14 +79,13 @@ public enum GainIndexes
 
     private int mL;
     private int[] mIndexes;
-
-    private static final Map<Integer,GainIndexes> LOOKUP_MAP = new TreeMap<>();
+    private static final GainIndexes[] LOOKUP_TABLE = new GainIndexes[57];
 
     static
     {
         for(GainIndexes indexes : GainIndexes.values())
         {
-            LOOKUP_MAP.put(indexes.mL, indexes);
+            LOOKUP_TABLE[indexes.mL] = indexes;
         }
     }
 
@@ -108,7 +104,7 @@ public enum GainIndexes
     {
         if(9 <= L && L <= 56)
         {
-            return LOOKUP_MAP.get(L);
+            return LOOKUP_TABLE[L];
         }
 
         throw new IllegalArgumentException("Invalid value of L [" + L + "].  Valid values are in range 9 <> 56");

@@ -21,6 +21,7 @@ package jmbe.audio;
 
 import jmbe.iface.IAudioWithMetadata;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,8 +30,8 @@ import java.util.Map;
  */
 public class AudioWithMetadata implements IAudioWithMetadata
 {
-    private float[] mAudio;
-    private Map<String,String> mMetadataMap = new HashMap<>();
+    private final float[] mAudio;
+    private Map<String,String> mMetadataMap;
 
     /**
      * Constructs an instance
@@ -53,6 +54,11 @@ public class AudioWithMetadata implements IAudioWithMetadata
 
     public void addMetadata(String key, String value)
     {
+        if(mMetadataMap == null)
+        {
+            mMetadataMap = new HashMap<>();
+        }
+
         mMetadataMap.put(key, value);
     }
 
@@ -62,7 +68,7 @@ public class AudioWithMetadata implements IAudioWithMetadata
     @Override
     public boolean hasMetadata()
     {
-        return !mMetadataMap.isEmpty();
+        return mMetadataMap != null && !mMetadataMap.isEmpty();
     }
 
     /**
@@ -72,7 +78,7 @@ public class AudioWithMetadata implements IAudioWithMetadata
     @Override
     public Map<String,String> getMetadata()
     {
-        return mMetadataMap;
+        return mMetadataMap == null ? Collections.emptyMap() : mMetadataMap;
     }
 
     /**

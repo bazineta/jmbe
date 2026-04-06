@@ -41,6 +41,7 @@ public enum AMBEPlusVoicingDecision
     V14(new boolean[]{true, true, true, true, true, true, false, false}),
     V15(new boolean[]{true, true, true, true, true, true, true, true});
 
+    private static final AMBEPlusVoicingDecision[] VALUES = values();
     private boolean[] mVoiceDecisions;
 
     AMBEPlusVoicingDecision(boolean[] voiceDecisions)
@@ -62,10 +63,9 @@ public enum AMBEPlusVoicingDecision
     {
         if(0 <= value && value <= 15)
         {
-            return AMBEPlusVoicingDecision.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Quantization vector values must be in range 0-15.  Unsupported value: " + value);
     }
 }
-

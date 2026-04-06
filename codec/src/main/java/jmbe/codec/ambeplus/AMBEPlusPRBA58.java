@@ -153,6 +153,7 @@ public enum AMBEPlusPRBA58
     V126(0.218750f, 0.070313f, 0.007813f, 0.039063f),
     V127(0.226563f, 0.242188f, 0.007813f, 0.148438f);
 
+    private static final AMBEPlusPRBA58[] VALUES = values();
     private float mG5;
     private float mG6;
     private float mG7;
@@ -190,7 +191,7 @@ public enum AMBEPlusPRBA58
     {
         if(0 <= value && value <= 127)
         {
-            return AMBEPlusPRBA58.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Value must be in range 0-127.  Unsupported value: " + value);

@@ -41,6 +41,7 @@ public enum AMBEPlusHOCB6
     V14(new float[]{0.273438f, -0.179688f, 0.054688f, -0.007813f}),
     V15(new float[]{0.421875f, 0.054688f, -0.039063f, 0.000000f});
 
+    private static final AMBEPlusHOCB6[] VALUES = values();
     private float[] mCoefficients;
 
     AMBEPlusHOCB6(float[] coefficients)
@@ -57,7 +58,7 @@ public enum AMBEPlusHOCB6
     {
         if(0 <= value && value <= 15)
         {
-            return AMBEPlusHOCB6.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Value must be in range 0-15.  Unsupported value: " + value);

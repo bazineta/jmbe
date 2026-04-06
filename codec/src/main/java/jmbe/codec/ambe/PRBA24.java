@@ -518,6 +518,7 @@ public enum PRBA24
     V510(-0.253089f, 0.412356f, 0.489854f),
     V511(-0.410922f, 0.562454f, 0.543891f);
 
+    private static final PRBA24[] VALUES = values();
     private float mG2;
     private float mG3;
     private float mG4;
@@ -548,7 +549,7 @@ public enum PRBA24
     {
         if(0 <= value && value <= 511)
         {
-            return PRBA24.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Value must be in range 0-511.  Unsupported value: " + value);

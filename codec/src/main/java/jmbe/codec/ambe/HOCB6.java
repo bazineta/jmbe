@@ -22,6 +22,7 @@ public enum HOCB6
     V14(new float[] {0.012376f, -0.000267f, 0.006657f, -0.013941f}),
     V15(new float[] {0.165852f, -0.103467f, 0.119713f, -0.075455f});
 
+    private static final HOCB6[] VALUES = values();
     private float[] mCoefficients;
 
     HOCB6(float[] coefficients)
@@ -38,7 +39,7 @@ public enum HOCB6
     {
         if(0 <= value && value <= 15)
         {
-            return HOCB6.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Value must be in range 0-15.  Unsupported value: " + value);

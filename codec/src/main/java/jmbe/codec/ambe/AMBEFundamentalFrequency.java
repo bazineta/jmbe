@@ -22,9 +22,6 @@ package jmbe.codec.ambe;
 import jmbe.codec.FrameType;
 import jmbe.codec.IFundamentalFrequency;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 /**
  * AMBE Fundamental frequency, harmonic count and frame type enumeration
  */
@@ -163,7 +160,7 @@ public enum AMBEFundamentalFrequency implements IFundamentalFrequency
     private float mFrequency;
     private int mL;
     private FrameType mFrameType;
-    private static Map<Integer,AMBEFundamentalFrequency> LOOKUP_MAP = new TreeMap<>();
+    private static final AMBEFundamentalFrequency[] LOOKUP_TABLE = new AMBEFundamentalFrequency[128];
 
     AMBEFundamentalFrequency(int index, double frequency, int l, FrameType frameType)
     {
@@ -177,7 +174,7 @@ public enum AMBEFundamentalFrequency implements IFundamentalFrequency
     {
         for(AMBEFundamentalFrequency frequency: AMBEFundamentalFrequency.values())
         {
-            LOOKUP_MAP.put(frequency.mIndex, frequency);
+            LOOKUP_TABLE[frequency.mIndex] = frequency;
         }
     }
 
@@ -198,13 +195,11 @@ public enum AMBEFundamentalFrequency implements IFundamentalFrequency
 
     public static AMBEFundamentalFrequency fromValue(int value)
     {
-        AMBEFundamentalFrequency frequency = LOOKUP_MAP.get(value);
-
-        if(frequency == null)
+        if(value < 0 || value >= LOOKUP_TABLE.length)
         {
             throw new IllegalArgumentException("Fundamental frequency value must be in the range 0 - 127.  Unrecognized: " + value);
         }
 
-        return frequency;
+        return LOOKUP_TABLE[value];
     }
 }

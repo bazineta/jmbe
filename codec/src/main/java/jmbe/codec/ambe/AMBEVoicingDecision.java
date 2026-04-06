@@ -38,6 +38,7 @@ public enum AMBEVoicingDecision
     V30(new boolean[]{false, false, false, false, false, false, false, false}),
     V31(new boolean[]{false, false, false, false, false, false, false, false});
 
+    private static final AMBEVoicingDecision[] VALUES = values();
     private boolean[] mVoiceDecisions;
 
     AMBEVoicingDecision(boolean[] voiceDecisions)
@@ -59,10 +60,9 @@ public enum AMBEVoicingDecision
     {
         if(0 <= value && value <= 31)
         {
-            return AMBEVoicingDecision.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Quantization vector values must be in range 0-31.  Unsupported value: " + value);
     }
 }
-

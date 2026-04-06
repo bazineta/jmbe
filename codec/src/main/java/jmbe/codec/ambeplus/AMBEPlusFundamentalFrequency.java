@@ -156,6 +156,7 @@ public enum AMBEPlusFundamentalFrequency implements IFundamentalFrequency
     W126(0, 9, FrameType.TONE),
     W127(0, 9, FrameType.TONE);
 
+    private static final AMBEPlusFundamentalFrequency[] VALUES = values();
     private float mFrequency;
     private int mL;
     private FrameType mFrameType;
@@ -186,7 +187,7 @@ public enum AMBEPlusFundamentalFrequency implements IFundamentalFrequency
     {
         if(0 <= value && value <= 127)
         {
-            return AMBEPlusFundamentalFrequency.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Fundamental frequency value must be in the range 0 - 127.  Unrecognized: " + value);

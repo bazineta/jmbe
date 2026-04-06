@@ -89,6 +89,7 @@ public enum Gain
     G62(8.124863f),
     G63(8.695827f);
 
+    private static final Gain[] VALUES = values();
     private float mGain;
 
     Gain(float gain)
@@ -105,7 +106,7 @@ public enum Gain
     {
         if(0 <= value && value <= 63)
         {
-            return Gain.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Value must be in range 0-63.  Unsupported value: " + value);

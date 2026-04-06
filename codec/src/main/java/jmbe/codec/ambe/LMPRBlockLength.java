@@ -63,6 +63,7 @@ public enum LMPRBlockLength
     L55(new int[] {0, 11, 12, 15, 17}),
     L56(new int[] {0, 11, 13, 15, 17});
 
+    private static final LMPRBlockLength[] VALUES = values();
     private int[] mBlockLengths;
 
     LMPRBlockLength(int[] blockLengths)
@@ -79,7 +80,7 @@ public enum LMPRBlockLength
     {
         if(0 <= value && value <= 56)
         {
-            return LMPRBlockLength.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Value must be in range 0-56.  Unrecognized value: " + value);

@@ -39,6 +39,7 @@ public enum HOCB5
     V30(new float[] {-0.742866f, -0.204364f, -0.123865f, -0.038888f}),
     V31(new float[] {-0.573077f, -0.115287f, 0.208879f, -0.027698f});
 
+    private static final HOCB5[] VALUES = values();
     private float[] mCoefficients;
 
     HOCB5(float[] coefficients)
@@ -55,7 +56,7 @@ public enum HOCB5
     {
         if(0 <= value && value <= 31)
         {
-            return HOCB5.values()[value];
+            return VALUES[value];
         }
 
         throw new IllegalArgumentException("Value must be in range 0-31.  Unsupported value: " + value);
