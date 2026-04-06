@@ -22,6 +22,10 @@ import javax.sound.sampled.AudioFormat;
 
 public class JMBEAudioFormat
 {
+	private JMBEAudioFormat()
+	{
+	}
+
 	public static final AudioFormat.Encoding IMBE_ENCODING = 
 				new AudioFormat.Encoding( "IMBE" );
 
@@ -66,4 +70,3 @@ public class JMBEAudioFormat
 					 PCM_48KHZ_RATE,
 					 LITTLE_ENDIAN );
 }
-

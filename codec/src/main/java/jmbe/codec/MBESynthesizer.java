@@ -101,7 +101,7 @@ public abstract class MBESynthesizer
             return 0.0f;
         }
 
-        return Window.SYNTHESIS[n + 105];
+        return Window.getSynthesisCoefficient(n + 105);
     }
 
     /**
@@ -114,7 +114,7 @@ public abstract class MBESynthesizer
             return 0.0f;
         }
 
-        return Window.PITCH_REFINEMENT[n + 110];
+        return Window.getPitchRefinementCoefficient(n + 110);
     }
 
     /**
@@ -137,9 +137,7 @@ public abstract class MBESynthesizer
             sum_ws_squared += (synthesisWindow(x) * synthesisWindow(x));
         }
 
-        float yw = sum_wr * (float)Math.pow((sum_ws_squared / sum_wr_squared), 0.5f);
-
-        return yw;
+        return sum_wr * (float)Math.pow((sum_ws_squared / sum_wr_squared), 0.5f);
     }
 
     /**

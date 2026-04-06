@@ -33,7 +33,7 @@ public class Golay24
      *
      * CRCUtil.generate( 12, 11, 0xC75, 0x0, true );
      */
-    public static final int[] CHECKSUMS = new int[]
+    private static final int[] CHECKSUMS = new int[]
         {
             0x63A, 0x31D, 0x7B4, 0x3DA, 0x1ED, 0x6CC, 0x366, 0x1B3,
             0x6E3, 0x54B, 0x49F, 0x475, 0x400, 0x200, 0x100, 0x080,
@@ -79,7 +79,6 @@ public class Golay24
             if(parityError)
             {
                 message.flip(startIndex + 23);
-//                message.incrementCorrectedBitCount(1);
                 return 1;
             }
 

@@ -42,7 +42,7 @@ public enum DifferentialGain
     G31(6.874496f, 1.0f);
 
     private float mGain;
-    public float mAdjustment;
+    private float mAdjustment;
 
     DifferentialGain(float gain, float adjustment)
     {

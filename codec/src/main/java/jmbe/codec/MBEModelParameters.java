@@ -46,7 +46,7 @@ public abstract class MBEModelParameters
      *
      * @param mbeFundamentalFrequency for the frame
      */
-    public MBEModelParameters(IFundamentalFrequency mbeFundamentalFrequency)
+    protected MBEModelParameters(IFundamentalFrequency mbeFundamentalFrequency)
     {
         setMBEFundamentalFrequency(mbeFundamentalFrequency);
     }
@@ -437,7 +437,7 @@ public abstract class MBEModelParameters
                 float amplitude = enhancedSpectralAmplitudes[l];
 
                 /* Algorithm #113 - apply adaptive threshold to voice/no voice decisions */
-                voicingDecisions[l] = ((amplitude > VM) ? true : voicingDecisions[l]);
+                voicingDecisions[l] = amplitude > VM || voicingDecisions[l];
             }
 
             setVoicingDecisions(voicingDecisions);

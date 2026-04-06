@@ -34,7 +34,6 @@ public class AMBEModelParameters extends MBEModelParameters
     private static final float ONE_OVER_TWO_SQR_TWO = 1.0f / (2.0f * (float)Math.sqrt(2.0f));
     private static final float TWO_PI = 2.0f * (float)Math.PI;
     private float mGain;
-    public int[] mB;
 
     /**
      * Creates a default set of model parameters to be used as an initial frame
@@ -51,8 +50,6 @@ public class AMBEModelParameters extends MBEModelParameters
     public AMBEModelParameters(AMBEFundamentalFrequency fundamental, int[] b, int[] errors, AMBEModelParameters previous)
     {
         super(fundamental);
-
-        mB = b;
 
         //Alg 55 & 56
         setErrorCountTotal(errors[0] + errors[1]);
@@ -260,6 +257,8 @@ public class AMBEModelParameters extends MBEModelParameters
                     case 4:
                         coefficients = HOCB8.fromValue(b8).getCoefficients();
                         break;
+                    default:
+                        throw new IllegalStateException("Unexpected coefficient block index: " + i);
                 }
 
                 switch(J[i])

@@ -31,8 +31,8 @@ public class IMBEFrame
 {
     public static final float LOG_2 = (float)Math.log(2.0);
 
-    public static final int[] RANDOMIZER_SEED = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
-    public static final int[] VECTOR_B0 = {0, 1, 2, 3, 4, 5, 141, 142};
+    private static final int[] RANDOMIZER_SEED = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    private static final int[] VECTOR_B0 = {0, 1, 2, 3, 4, 5, 141, 142};
 
     /**
      * Message frame bit index of the voiced/unvoiced decision for all values
@@ -41,14 +41,14 @@ public class IMBEFrame
      * On decoding, each of the L harmonics are flagged as voiced or unvoiced
      * according to the harmonic's location within each K frequency band.
      */
-    public static final int[] VOICE_DECISION_INDEX = new int[]{0, 92, 92, 92, 93, 93, 93, 94, 94, 94, 95, 95, 95, 96,
+    private static final int[] VOICE_DECISION_INDEX = new int[]{0, 92, 92, 92, 93, 93, 93, 94, 94, 94, 95, 95, 95, 96,
         96, 96, 97, 97, 97, 98, 98, 98, 99, 99, 99, 100, 100, 100, 101, 101, 101, 102, 102, 102, 107, 107, 107, 107,
         107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107};
 
     /**
      * Coefficient offsets for bit lengths 0 - 10:   (2 ^ (bit length -1)) - 0.5
      */
-    public static final float[] COEFFICIENT_OFFSET = new float[] {0.0f, 0.5f, 1.5f, 3.5f, 7.5f, 15.5f, 31.5f, 63.5f,
+    private static final float[] COEFFICIENT_OFFSET = new float[] {0.0f, 0.5f, 1.5f, 3.5f, 7.5f, 15.5f, 31.5f, 63.5f,
         127.5f, 255.5f, 511.5f};
 
     private BinaryFrame mFrame;

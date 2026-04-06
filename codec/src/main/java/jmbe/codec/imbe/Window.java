@@ -24,7 +24,7 @@ public class Window
     /**
      * Synthesis window coefficients from Annex I for indices -105 <> 105 (211 coefficients)</>
      */
-    public static final float[] SYNTHESIS = new float[]{
+    private static final float[] SYNTHESIS = new float[]{
         0.00f, 0.02f, 0.04f, 0.06f, 0.08f, 0.10f, 0.12f, 0.14f, 0.16f, 0.18f,
         0.20f, 0.22f, 0.24f, 0.26f, 0.28f, 0.30f, 0.32f, 0.34f, 0.36f, 0.38f,
         0.40f, 0.42f, 0.44f, 0.46f, 0.48f, 0.50f, 0.52f, 0.54f, 0.56f, 0.58f,
@@ -50,7 +50,7 @@ public class Window
     /**
      * Pitch refinement window coefficients
      */
-    public static final float[] PITCH_REFINEMENT = new float[]{
+    private static final float[] PITCH_REFINEMENT = new float[]{
         0.014873f, 0.017397f, 0.020102f, 0.022995f, 0.026081f, 0.029365f, 0.032852f, 0.036546f, 0.040451f, 0.044573f,
         0.048915f, 0.053482f, 0.058277f, 0.063303f, 0.068563f, 0.074062f, 0.079801f, 0.085782f, 0.092009f, 0.098483f,
         0.105205f, 0.112176f, 0.119398f, 0.126872f, 0.134596f, 0.142572f, 0.150799f, 0.159276f, 0.168001f, 0.176974f,
@@ -75,6 +75,16 @@ public class Window
         0.048915f, 0.044573f, 0.040451f, 0.036546f, 0.032852f, 0.029365f, 0.026081f, 0.022995f, 0.020102f, 0.017397f,
         0.014873f
     };
+
+    public static float getSynthesisCoefficient(int index)
+    {
+        return SYNTHESIS[index];
+    }
+
+    public static float getPitchRefinementCoefficient(int index)
+    {
+        return PITCH_REFINEMENT[index];
+    }
 
     private Window()
     {

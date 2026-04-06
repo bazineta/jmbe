@@ -99,12 +99,13 @@ public class ToneGenerator
                 SourceDataLine sourceDataLine = AudioSystem.getSourceDataLine(audioFormat);
                 sourceDataLine.open(audioFormat);
 
-                for(Tone tone: Tone.DTMF_TONES)
-//                for(Tone tone: Tone.KNOX_TONES)
-//                for(Tone tone: Tone.CALL_PROGRESS_TONES)
-//                for(Tone tone: Tone.DISCRETE_TONES)
-//                for(Tone tone: Tone.values())
+                for(Tone tone: Tone.values())
                 {
+                    if(!tone.isDtmfTone())
+                    {
+                        continue;
+                    }
+
                     for(int x = 0; x < 128; x++) //Amplitude levels 0 - 127
                     {
                         System.out.print("\rTONE [" + tone.name() + "]: " + tone + " " + tone.getFrequency1() +

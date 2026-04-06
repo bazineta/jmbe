@@ -2,6 +2,7 @@ package jmbe.codec.ambe;
 
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -194,10 +195,10 @@ public enum Tone
         mFrequency2 = frequency2;
     }
 
-    public static EnumSet<Tone> DISCRETE_TONES = EnumSet.range(Tone.T5, Tone.T122);
-    public static EnumSet<Tone> DTMF_TONES = EnumSet.range(Tone.T128_DTMF_0, Tone.T143_DTMF_POUND);
-    public static EnumSet<Tone> KNOX_TONES = EnumSet.range(Tone.T144_KNOX_0, Tone.T159_KNOX_POUND);
-    public static EnumSet<Tone> CALL_PROGRESS_TONES = EnumSet.range(Tone.T160, Tone.T163);
+    private static final Set<Tone> DISCRETE_TONES = EnumSet.range(Tone.T5, Tone.T122);
+    private static final Set<Tone> DTMF_TONES = EnumSet.range(Tone.T128_DTMF_0, Tone.T143_DTMF_POUND);
+    private static final Set<Tone> KNOX_TONES = EnumSet.range(Tone.T144_KNOX_0, Tone.T159_KNOX_POUND);
+    private static final Set<Tone> CALL_PROGRESS_TONES = EnumSet.range(Tone.T160, Tone.T163);
 
     @Override
     public String toString()
@@ -227,6 +228,26 @@ public enum Tone
     public boolean hasFrequency2()
     {
         return mFrequency2 > 0.0;
+    }
+
+    public boolean isDiscreteTone()
+    {
+        return DISCRETE_TONES.contains(this);
+    }
+
+    public boolean isDtmfTone()
+    {
+        return DTMF_TONES.contains(this);
+    }
+
+    public boolean isKnoxTone()
+    {
+        return KNOX_TONES.contains(this);
+    }
+
+    public boolean isCallProgressTone()
+    {
+        return CALL_PROGRESS_TONES.contains(this);
     }
 
     /**

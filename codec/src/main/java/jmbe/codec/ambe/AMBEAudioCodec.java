@@ -67,19 +67,19 @@ public class AMBEAudioCodec implements IAudioCodec
         {
             Tone tone = frame.getToneParameters().getTone();
 
-            if(Tone.CALL_PROGRESS_TONES.contains(tone))
+            if(tone.isCallProgressTone())
             {
                 audioWithMetadata.addMetadata("CALL PROGRESS", tone.toString());
             }
-            else if(Tone.DISCRETE_TONES.contains(tone))
+            else if(tone.isDiscreteTone())
             {
                 audioWithMetadata.addMetadata("TONE", tone.toString());
             }
-            else if(Tone.DTMF_TONES.contains(tone))
+            else if(tone.isDtmfTone())
             {
                 audioWithMetadata.addMetadata("DTMF", tone.toString());
             }
-            else if(Tone.KNOX_TONES.contains(tone))
+            else if(tone.isKnoxTone())
             {
                 audioWithMetadata.addMetadata("KNOX", tone.toString());
             }

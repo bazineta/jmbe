@@ -51,13 +51,6 @@ public class AMBESynthesizer extends MBESynthesizer
     private AMBEModelParameters mPreviousFrame = new AMBEModelParameters();
 
     /**
-     * AMBE synthesizer producing 8 kHz 16-bit audio from AMBE audio (voice/tone) frames
-     */
-    public AMBESynthesizer()
-    {
-    }
-
-    /**
      * Previous AMBE frame parameters
      *
      * @return parameters
@@ -164,12 +157,8 @@ public class AMBESynthesizer extends MBESynthesizer
             8000.0f, 16, 1, 2, 8000.0f, false);
         ByteBuffer byteBuffer = ByteBuffer.allocate(frames.size() * 320);
 
-        int frameCounter = 0;
-
         for(byte[] frame : frames)
         {
-            frameCounter++;
-
             float[] samples = audioCodec.getAudio(frame);
 
             ByteBuffer converted = ByteBuffer.allocate(samples.length * 2);
@@ -207,8 +196,6 @@ public class AMBESynthesizer extends MBESynthesizer
         AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
             8000.0f, 16, 1, 2, 8000.0f, false);
         ByteBuffer byteBuffer = ByteBuffer.allocate(frames.size() * 320);
-
-        int frameCounter = 0;
 
         for(byte[] frame : frames)
         {
