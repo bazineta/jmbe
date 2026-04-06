@@ -179,15 +179,160 @@ public class AMBEModelParameters extends MBEModelParameters
      */
     private void decodePRBAVector(int b3, int b4, int b5, int b6, int b7, int b8, AMBEModelParameters previousParameters)
     {
-        float[] G = new float[9];
-        G[1] = 0.0f;
+        float[] gainVector = decodeGainVector(b3, b4);
+        float[] residualVector = createResidualVector(gainVector);
+        int[] blockLengths = LMPRBlockLength.fromValue(getL()).getBlockLengths();
+        float[][] dctCoefficients = createDctCoefficients(residualVector, blockLengths, b5, b6, b7, b8);
+        float[] predictionResiduals = createPredictionResiduals(dctCoefficients, blockLengths);
+        int previousL = previousParameters.getL();
+        float[] previousA = previousParameters.getLog2SpectralAmplitudes();
+        InterpolationParameters interpolationParameters = getInterpolationParameters(previousL);
+        float lambdaSum = getPredictionResidualAverage(predictionResiduals);
+        float gain = mGain - (0.5f * (float)(Math.log(getL()) / Math.log(2.0))) - lambdaSum;
+        float summation43 = getScaledInterpolationSum(previousA, previousL, interpolationParameters);
+        float[] logSpectralAmplitudes = createLogSpectralAmplitudes(predictionResiduals, previousA, previousL,
+            interpolationParameters, summation43, gain);
+        float[] spectralAmplitudes = createSpectralAmplitudes(logSpectralAmplitudes, getVoicingDecisions());
+
+        setLog2SpectralAmplitudes(logSpectralAmplitudes);
+        setSpectralAmplitudes(spectralAmplitudes, previousParameters.getLocalEnergy(),
+            previousParameters.getAmplitudeThreshold());
+    }
+
+    private InterpolationParameters getInterpolationParameters(int previousL)
+    {
+        float kappa = previousL / (float)getL();
+        int[] kFloor = new int[getL() + 1];
+        float[] s = new float[getL() + 1];
+
+        for(int l = 1; l <= getL(); l++)
+        {
+            float interpolationIndex = kappa * l;
+            kFloor[l] = (int)Math.floor(interpolationIndex);
+            s[l] = interpolationIndex - kFloor[l];
+        }
+
+        return new InterpolationParameters(kFloor, s);
+    }
+
+    private float getPredictionResidualAverage(float[] predictionResiduals)
+    {
+        float lambdaSum = 0.0f;
+
+        for(int l = 1; l <= getL(); l++)
+        {
+            lambdaSum += predictionResiduals[l];
+        }
+
+        return lambdaSum / (float)getL();
+    }
+
+    private float getScaledInterpolationSum(float[] previousA, int previousL, InterpolationParameters interpolationParameters)
+    {
+        float summation43 = 0.0f;
+
+        for(int l = 1; l <= getL(); l++)
+        {
+            float aklPrevious = getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor()[l]);
+            int nextBandIndex = getNextBandIndex(l);
+            float aklPlus1Previous =
+                getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor()[nextBandIndex]);
+            summation43 += ((1.0f - interpolationParameters.getS()[l]) * aklPrevious)
+                + (interpolationParameters.getS()[l] * aklPlus1Previous);
+        }
+
+        return summation43 * (0.65f / (float)getL());
+    }
+
+    private float[] createLogSpectralAmplitudes(float[] predictionResiduals, float[] previousA, int previousL,
+        InterpolationParameters interpolationParameters, float summation43, float gain)
+    {
+        float[] logSpectralAmplitudes = new float[getL() + 1];
+        logSpectralAmplitudes[0] = 1.0f;
+
+        for(int l = 1; l <= getL(); l++)
+        {
+            float aklPrevious = getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor()[l]);
+            int nextBandIndex = getNextBandIndex(l);
+            float aklPlus1Previous =
+                getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor()[nextBandIndex]);
+            logSpectralAmplitudes[l] = predictionResiduals[l]
+                + (0.65f * (1.0f - interpolationParameters.getS()[l]) * aklPrevious)
+                + (0.65f * interpolationParameters.getS()[l] * aklPlus1Previous)
+                - summation43
+                + gain;
+        }
+
+        return logSpectralAmplitudes;
+    }
+
+    private float[] createSpectralAmplitudes(float[] logSpectralAmplitudes, boolean[] voicingDecisions)
+    {
+        float[] spectralAmplitudes = new float[getL() + 1];
+        float unvoicedCoefficient = 0.2046f / (float)Math.sqrt(getFundamentalFrequency());
+
+        for(int l = 1; l <= getL(); l++)
+        {
+            float amplitude = (float)Math.exp(0.693f * logSpectralAmplitudes[l]);
+            spectralAmplitudes[l] = voicingDecisions[l] ? amplitude : unvoicedCoefficient * amplitude;
+        }
+
+        return spectralAmplitudes;
+    }
+
+    private float getPreviousLogSpectralAmplitude(float[] previousA, int previousL, int interpolationIndex)
+    {
+        if(interpolationIndex <= 0)
+        {
+            return previousA[1];
+        }
+
+        if(interpolationIndex <= previousL)
+        {
+            return previousA[interpolationIndex];
+        }
+
+        return previousA[previousL];
+    }
+
+    private int getNextBandIndex(int l)
+    {
+        return l < getL() ? l + 1 : getL();
+    }
+
+    private static final class InterpolationParameters
+    {
+        private final int[] mKFloor;
+        private final float[] mS;
+
+        private InterpolationParameters(int[] kFloor, float[] s)
+        {
+            mKFloor = kFloor;
+            mS = s;
+        }
+
+        private int[] getKFloor()
+        {
+            return mKFloor;
+        }
+
+        private float[] getS()
+        {
+            return mS;
+        }
+    }
+
+    private float[] decodeGainVector(int b3, int b4)
+    {
+        float[] gainVector = new float[9];
+        gainVector[1] = 0.0f;
 
         try
         {
             PRBA24 prba24 = PRBA24.fromValue(b3);
-            G[2] = prba24.getG2();
-            G[3] = prba24.getG3();
-            G[4] = prba24.getG4();
+            gainVector[2] = prba24.getG2();
+            gainVector[3] = prba24.getG3();
+            gainVector[4] = prba24.getG4();
         }
         catch(Exception e)
         {
@@ -197,212 +342,119 @@ public class AMBEModelParameters extends MBEModelParameters
         try
         {
             PRBA58 prba58 = PRBA58.fromValue(b4);
-            G[5] = prba58.getG5();
-            G[6] = prba58.getG6();
-            G[7] = prba58.getG7();
-            G[8] = prba58.getG8();
+            gainVector[5] = prba58.getG5();
+            gainVector[6] = prba58.getG6();
+            gainVector[7] = prba58.getG7();
+            gainVector[8] = prba58.getG8();
         }
         catch(Exception e)
         {
             mLog.error("Unable to getAudio PRBA 5-8 vector from value B4[" + b4 + "]");
         }
 
-        float[] R = new float[9];
+        return gainVector;
+    }
+
+    private float[] createResidualVector(float[] gainVector)
+    {
+        float[] residualVector = new float[9];
 
         //Alg 27 & 28. Inverse DCT of G[]
         for(int i = 1; i <= 8; i++)
         {
-            R[i] = G[1];
+            residualVector[i] = gainVector[1];
 
             for(int m = 2; m <= 8; m++)
             {
-                R[i] += (2.0 * G[m] * (float)Math.cos(((float)Math.PI * (m - 1) * (i - 0.5f)) / 8.0f));
+                residualVector[i] += (2.0 * gainVector[m] * (float)Math.cos(((float)Math.PI * (m - 1) * (i - 0.5f)) /
+                    8.0f));
             }
         }
 
-        float[][] C = new float[5][18];
+        return residualVector;
+    }
+
+    private float[][] createDctCoefficients(float[] residualVector, int[] blockLengths, int b5, int b6, int b7, int b8)
+    {
+        float[][] coefficients = new float[5][18];
 
         //Alg 29,31,33,35
-        C[1][1] = 0.5f * (R[1] + R[2]);
-        C[2][1] = 0.5f * (R[3] + R[4]);
-        C[3][1] = 0.5f * (R[5] + R[6]);
-        C[4][1] = 0.5f * (R[7] + R[8]);
+        coefficients[1][1] = 0.5f * (residualVector[1] + residualVector[2]);
+        coefficients[2][1] = 0.5f * (residualVector[3] + residualVector[4]);
+        coefficients[3][1] = 0.5f * (residualVector[5] + residualVector[6]);
+        coefficients[4][1] = 0.5f * (residualVector[7] + residualVector[8]);
 
         //Alg 30,32,34,36
-        C[1][2] = ONE_OVER_TWO_SQR_TWO * (R[1] - R[2]);
-        C[2][2] = ONE_OVER_TWO_SQR_TWO * (R[3] - R[4]);
-        C[3][2] = ONE_OVER_TWO_SQR_TWO * (R[5] - R[6]);
-        C[4][2] = ONE_OVER_TWO_SQR_TWO * (R[7] - R[8]);
+        coefficients[1][2] = ONE_OVER_TWO_SQR_TWO * (residualVector[1] - residualVector[2]);
+        coefficients[2][2] = ONE_OVER_TWO_SQR_TWO * (residualVector[3] - residualVector[4]);
+        coefficients[3][2] = ONE_OVER_TWO_SQR_TWO * (residualVector[5] - residualVector[6]);
+        coefficients[4][2] = ONE_OVER_TWO_SQR_TWO * (residualVector[7] - residualVector[8]);
 
-        int[] J = LMPRBlockLength.fromValue(getL()).getBlockLengths();
+        populateHigherOrderCoefficients(coefficients, blockLengths, b5, b6, b7, b8);
 
-        float[] coefficients = null;
+        return coefficients;
+    }
 
+    private void populateHigherOrderCoefficients(float[][] coefficients, int[] blockLengths, int b5, int b6, int b7, int b8)
+    {
         //Alg 37
         for(int i = 1; i <= 4; i++)
         {
-            if(J[i] > 2)
+            if(blockLengths[i] > 2)
             {
-                switch(i)
-                {
-                    case 1:
-                        coefficients = HOCB5.fromValue(b5).getCoefficients();
-                        break;
-                    case 2:
-                        coefficients = HOCB6.fromValue(b6).getCoefficients();
-                        break;
-                    case 3:
-                        coefficients = HOCB7.fromValue(b7).getCoefficients();
-                        break;
-                    case 4:
-                        coefficients = HOCB8.fromValue(b8).getCoefficients();
-                        break;
-                    default:
-                        throw new IllegalStateException("Unexpected coefficient block index: " + i);
-                }
-
-                switch(J[i])
-                {
-                    case 3:
-                        C[i][3] = coefficients[0];
-                        break;
-                    case 4:
-                        C[i][3] = coefficients[0];
-                        C[i][4] = coefficients[1];
-                        break;
-                    case 5:
-                        C[i][3] = coefficients[0];
-                        C[i][4] = coefficients[1];
-                        C[i][5] = coefficients[2];
-                        break;
-                    default:
-                        C[i][3] = coefficients[0];
-                        C[i][4] = coefficients[1];
-                        C[i][5] = coefficients[2];
-                        C[i][6] = coefficients[3];
-                        break;
-                }
+                applyHigherOrderCoefficients(coefficients[i], blockLengths[i], getHigherOrderCoefficients(i, b5, b6, b7, b8));
             }
         }
+    }
 
+    private float[] getHigherOrderCoefficients(int blockIndex, int b5, int b6, int b7, int b8)
+    {
+        switch(blockIndex)
+        {
+            case 1:
+                return HOCB5.fromValue(b5).getCoefficients();
+            case 2:
+                return HOCB6.fromValue(b6).getCoefficients();
+            case 3:
+                return HOCB7.fromValue(b7).getCoefficients();
+            case 4:
+                return HOCB8.fromValue(b8).getCoefficients();
+            default:
+                throw new IllegalStateException("Unexpected coefficient block index: " + blockIndex);
+        }
+    }
+
+    private void applyHigherOrderCoefficients(float[] coefficientRow, int blockLength, float[] higherOrderCoefficients)
+    {
+        for(int index = 0; index < blockLength - 2 && index < higherOrderCoefficients.length; index++)
+        {
+            coefficientRow[index + 3] = higherOrderCoefficients[index];
+        }
+    }
+
+    private float[] createPredictionResiduals(float[][] coefficients, int[] blockLengths)
+    {
         //Alg 38, 39. Inverse DCT of C to produce c(i,k) which is rearranged as T
-        float[] T = new float[getL() + 1];
-
+        float[] predictionResiduals = new float[getL() + 1];
         int lPointer = 1;
 
         for(int i = 1; i <= 4; i++)
         {
-            for(int j = 1; j <= J[i]; j++)
+            for(int j = 1; j <= blockLengths[i]; j++)
             {
-                float acc = C[i][1];
+                float acc = coefficients[i][1];
 
-                for(int k = 2; k <= J[i]; k++)
+                for(int k = 2; k <= blockLengths[i]; k++)
                 {
-                    acc += 2.0f * C[i][k] *
-                        (float)Math.cos(((float)Math.PI * (k - 1) * (j - 0.5f)) / J[i]);
+                    acc += 2.0f * coefficients[i][k] *
+                        (float)Math.cos(((float)Math.PI * (k - 1) * (j - 0.5f)) / blockLengths[i]);
                 }
 
-                T[lPointer++] = acc;
+                predictionResiduals[lPointer++] = acc;
             }
         }
 
-        int previousL = previousParameters.getL();
-
-        //Alg 40 & 41
-        float kappa = previousL / (float)getL();
-
-        float[] k = new float[getL() + 1];
-        int[] kFloor = new int[getL() + 1];
-        float[] s = new float[getL() + 1];
-
-        float[] previousA = previousParameters.getLog2SpectralAmplitudes();
-
-        //Alg 44
-        previousA[0] = previousA[1];
-
-        for(int l = 1; l <= getL(); l++)
-        {
-            k[l] = kappa * l;
-            kFloor[l] = (int)Math.floor(k[l]);
-            s[l] = k[l] - kFloor[l];
-        }
-
-        //Alg 42 & 43 - pre-compute sum
-        float summation43 = 0.0f;
-        float lambdaSum = 0.0f;
-
-        for(int l = 1; l <= getL(); l++)
-        {
-            float aklPrevious = kFloor[l] <= previousL ? previousA[kFloor[l]] : previousA[previousL];
-
-            int plus1 = l < getL() ? l + 1 : getL();
-            float aklPlus1Previous = kFloor[plus1] <= previousL ? previousA[kFloor[plus1]] : previousA[previousL];
-
-            summation43 += (((1.0f - s[l]) * aklPrevious) + (s[l] * aklPlus1Previous));
-            lambdaSum += T[l];
-        }
-
-        lambdaSum /= (float)getL();
-
-        //Alg 42
-        float gain = mGain - (0.5f * (float)(Math.log(getL()) / Math.log(2.0))) - lambdaSum;
-
-        //Log Spectral Amplitudes
-        float[] logSpectralAmplitudes = new float[getL() + 1];
-        logSpectralAmplitudes[0] = 1.0f;
-
-        //Spectral Amplitudes
-        float[] spectralAmplitudes = new float[getL() + 1];
-
-        boolean[] voicingDecisions = getVoicingDecisions();
-
-        float aklPrevious;
-        int lPlus1;
-        float aklPlus1Previous;
-
-        float unvoicedCoefficient = 0.2046f / (float)Math.sqrt(getFundamentalFrequency());
-
-        summation43 *= (0.65f / (float)getL());
-
-        for(int l = 1; l <= getL(); l++)
-        {
-            //Alg 44 & 45
-            if(kFloor[l] == 0)
-            {
-                aklPrevious = previousA[1];
-            }
-            else if(kFloor[l] <= previousL)
-            {
-                aklPrevious = previousA[kFloor[l]];
-            }
-            else
-            {
-                aklPrevious = previousA[previousL];
-            }
-
-            lPlus1 = l < getL() ? (l + 1) : getL();
-            aklPlus1Previous = ((kFloor[lPlus1]) <= previousL ? previousA[kFloor[lPlus1]] : previousA[previousL]);
-
-            //Alg 43
-            logSpectralAmplitudes[l] = T[l] + (0.65f * (1.0f - s[l]) * aklPrevious)
-                + (0.65f * s[l] * aklPlus1Previous)
-                - summation43
-                + gain;
-
-            //Alg 46 - spectral magnitude is based on the (l) band's voicing decision
-            if(voicingDecisions[l])
-            {
-                spectralAmplitudes[l] = (float)Math.exp(0.693f * logSpectralAmplitudes[l]);
-            }
-            else
-            {
-                spectralAmplitudes[l] = unvoicedCoefficient * (float)Math.exp(0.693f * logSpectralAmplitudes[l]);
-            }
-        }
-
-        setLog2SpectralAmplitudes(logSpectralAmplitudes);
-        setSpectralAmplitudes(spectralAmplitudes, previousParameters.getLocalEnergy(),
-            previousParameters.getAmplitudeThreshold());
+        return predictionResiduals;
     }
 
     /**
