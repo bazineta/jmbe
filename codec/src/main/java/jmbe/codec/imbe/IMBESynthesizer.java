@@ -21,8 +21,6 @@ package jmbe.codec.imbe;
 
 import jmbe.codec.MBEModelParameters;
 import jmbe.codec.MBESynthesizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
@@ -40,7 +38,6 @@ import java.nio.ByteOrder;
  */
 public class IMBESynthesizer extends MBESynthesizer
 {
-    private static final Logger mLog = LoggerFactory.getLogger(IMBESynthesizer.class);
     private IMBEModelParameters mPreviousParameters = new IMBEModelParameters();
 
     @Override
