@@ -233,12 +233,12 @@ public class AMBEModelParameters extends MBEModelParameters
 
         for(int l = 1; l <= getL(); l++)
         {
-            float aklPrevious = getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor()[l]);
+            float aklPrevious = getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor(l));
             int nextBandIndex = getNextBandIndex(l);
             float aklPlus1Previous =
-                getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor()[nextBandIndex]);
-            summation43 += ((1.0f - interpolationParameters.getS()[l]) * aklPrevious)
-                + (interpolationParameters.getS()[l] * aklPlus1Previous);
+                getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor(nextBandIndex));
+            summation43 += ((1.0f - interpolationParameters.getS(l)) * aklPrevious)
+                + (interpolationParameters.getS(l) * aklPlus1Previous);
         }
 
         return summation43 * (0.65f / (float)getL());
@@ -252,13 +252,13 @@ public class AMBEModelParameters extends MBEModelParameters
 
         for(int l = 1; l <= getL(); l++)
         {
-            float aklPrevious = getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor()[l]);
+            float aklPrevious = getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor(l));
             int nextBandIndex = getNextBandIndex(l);
             float aklPlus1Previous =
-                getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor()[nextBandIndex]);
+                getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor(nextBandIndex));
             logSpectralAmplitudes[l] = predictionResiduals[l]
-                + (0.65f * (1.0f - interpolationParameters.getS()[l]) * aklPrevious)
-                + (0.65f * interpolationParameters.getS()[l] * aklPlus1Previous)
+                + (0.65f * (1.0f - interpolationParameters.getS(l)) * aklPrevious)
+                + (0.65f * interpolationParameters.getS(l) * aklPlus1Previous)
                 - summation43
                 + gain;
         }
@@ -311,14 +311,14 @@ public class AMBEModelParameters extends MBEModelParameters
             mS = s;
         }
 
-        private int[] getKFloor()
+        private int getKFloor(int index)
         {
-            return mKFloor;
+            return mKFloor[index];
         }
 
-        private float[] getS()
+        private float getS(int index)
         {
-            return mS;
+            return mS[index];
         }
     }
 
