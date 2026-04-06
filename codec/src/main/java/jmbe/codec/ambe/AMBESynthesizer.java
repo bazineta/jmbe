@@ -34,11 +34,13 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -175,12 +177,11 @@ public class AMBESynthesizer extends MBESynthesizer
 
         AudioInputStream ais = new AudioInputStream(new ByteArrayInputStream(byteBuffer.array()), audioFormat, byteBuffer.array().length);
 
-        if(!outputFile.exists())
+        try(OutputStream outputStream = Files.newOutputStream(outputFile.toPath(), StandardOpenOption.CREATE,
+            StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE))
         {
-            outputFile.createNewFile();
+            AudioSystem.write(ais, AudioFileFormat.Type.WAVE, outputStream);
         }
-
-        AudioSystem.write(ais,AudioFileFormat.Type.WAVE, outputFile);
     }
 
     /**
@@ -215,12 +216,11 @@ public class AMBESynthesizer extends MBESynthesizer
 
         AudioInputStream ais = new AudioInputStream(new ByteArrayInputStream(byteBuffer.array()), audioFormat, byteBuffer.array().length);
 
-        if(!outputFile.exists())
+        try(OutputStream outputStream = Files.newOutputStream(outputFile.toPath(), StandardOpenOption.CREATE,
+            StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE))
         {
-            outputFile.createNewFile();
+            AudioSystem.write(ais, AudioFileFormat.Type.WAVE, outputStream);
         }
-
-        AudioSystem.write(ais,AudioFileFormat.Type.WAVE, outputFile);
     }
 
     /**
