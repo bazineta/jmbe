@@ -42,31 +42,4 @@ public class JMBEAudioFormat
 	public static final int ONE_CHANNEL = 1;
 	public static final int PCM_SAMPLE_SIZE_BITS = 16;
 	public static final int PCM_FRAME_SIZE_BYTES = 2;
-	
-	public static AudioFormat IMBE_AUDIO_FORMAT = 
-				new AudioFormat( IMBE_ENCODING, 
-								 IMBE_SAMPLE_RATE,
-								 IMBE_SAMPLE_SIZE_BITS,
-								 ONE_CHANNEL, 
-								 IMBE_FRAME_SIZE_BYTES, 
-								 IMBE_FRAME_RATE,
-								 LITTLE_ENDIAN );
-
-	public static AudioFormat PCM_SIGNED_8KHZ_16BITS =
-						new AudioFormat( AudioFormat.Encoding.PCM_SIGNED, 
-								 PCM_8KHZ_RATE,
-								 PCM_SAMPLE_SIZE_BITS,
-								 ONE_CHANNEL, 
-								 PCM_FRAME_SIZE_BYTES, 
-								 PCM_8KHZ_RATE,
-								 LITTLE_ENDIAN );
-	
-	public static AudioFormat PCM_SIGNED_48KHZ_16BITS =
-			new AudioFormat( AudioFormat.Encoding.PCM_SIGNED, 
-					 PCM_48KHZ_RATE,
-					 PCM_SAMPLE_SIZE_BITS,
-					 ONE_CHANNEL, 
-					 PCM_FRAME_SIZE_BYTES, 
-					 PCM_48KHZ_RATE,
-					 LITTLE_ENDIAN );
 }
