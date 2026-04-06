@@ -88,54 +88,7 @@ public class AMBESynthesizer extends MBESynthesizer
      */
     public float[] getAudio(AMBEFrame frame)
     {
-        float[] audio = null;
-
-        if(frame.isToneFrame())
-        {
-            if(frame.getToneParameters().isValidTone())
-            {
-                audio = getTone(frame.getToneParameters());
-            }
-            else
-            {
-                mPreviousFrame.setRepeatCount(mPreviousFrame.getRepeatCount());
-
-                if(!mPreviousFrame.isMaxFrameRepeat())
-                {
-                    audio = getVoice(mPreviousFrame);
-                }
-                else
-                {
-                    //Frame muting procedure
-                    mPreviousFrame = new AMBEModelParameters();
-                    audio = getWhiteNoise();
-                }
-            }
-        }
-        else
-        {
-            AMBEModelParameters parameters = frame.getVoiceParameters(mPreviousFrame);
-
-            if(!parameters.isMaxFrameRepeat())
-            {
-                if(parameters.isErasureFrame())
-                {
-                    audio = getWhiteNoise();
-                }
-                else
-                {
-                    audio = getVoice(parameters);
-                }
-
-                mPreviousFrame = parameters;
-            }
-            else
-            {
-                //Frame muting procedure
-                mPreviousFrame = new AMBEModelParameters();
-                audio = getWhiteNoise();
-            }
-        }
+        float[] audio = frame.isToneFrame() ? getToneFrameAudio(frame) : getVoiceFrameAudio(frame);
 
         if(audio == null)
         {
@@ -143,6 +96,48 @@ public class AMBESynthesizer extends MBESynthesizer
         }
 
         return audio;
+    }
+
+    private float[] getToneFrameAudio(AMBEFrame frame)
+    {
+        if(frame.getToneParameters().isValidTone())
+        {
+            return getTone(frame.getToneParameters());
+        }
+
+        mPreviousFrame.setRepeatCount(mPreviousFrame.getRepeatCount() + 1);
+
+        if(!mPreviousFrame.isMaxFrameRepeat())
+        {
+            return getVoice(mPreviousFrame);
+        }
+
+        return muteFrame();
+    }
+
+    private float[] getVoiceFrameAudio(AMBEFrame frame)
+    {
+        AMBEModelParameters parameters = frame.getVoiceParameters(mPreviousFrame);
+
+        if(parameters.isMaxFrameRepeat())
+        {
+            return muteFrame();
+        }
+
+        mPreviousFrame = parameters;
+
+        if(parameters.isErasureFrame())
+        {
+            return getWhiteNoise();
+        }
+
+        return getVoice(parameters);
+    }
+
+    private float[] muteFrame()
+    {
+        mPreviousFrame = new AMBEModelParameters();
+        return getWhiteNoise();
     }
 
     /**
