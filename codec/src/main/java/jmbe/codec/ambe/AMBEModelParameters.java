@@ -186,33 +186,17 @@ public class AMBEModelParameters extends MBEModelParameters
         float[] predictionResiduals = createPredictionResiduals(dctCoefficients, blockLengths);
         int previousL = previousParameters.getL();
         float[] previousA = previousParameters.getLog2SpectralAmplitudes();
-        InterpolationParameters interpolationParameters = getInterpolationParameters(previousL);
+        float kappa = previousL / (float)getL();
         float lambdaSum = getPredictionResidualAverage(predictionResiduals);
         float gain = mGain - (0.5f * (float)(Math.log(getL()) / Math.log(2.0))) - lambdaSum;
-        float summation43 = getScaledInterpolationSum(previousA, previousL, interpolationParameters);
+        float summation43 = getScaledInterpolationSum(previousA, previousL, kappa);
         float[] logSpectralAmplitudes = createLogSpectralAmplitudes(predictionResiduals, previousA, previousL,
-            interpolationParameters, summation43, gain);
+            kappa, summation43, gain);
         float[] spectralAmplitudes = createSpectralAmplitudes(logSpectralAmplitudes, getVoicingDecisions());
 
         setLog2SpectralAmplitudes(logSpectralAmplitudes);
         setSpectralAmplitudes(spectralAmplitudes, previousParameters.getLocalEnergy(),
             previousParameters.getAmplitudeThreshold());
-    }
-
-    private InterpolationParameters getInterpolationParameters(int previousL)
-    {
-        float kappa = previousL / (float)getL();
-        int[] kFloor = new int[getL() + 1];
-        float[] s = new float[getL() + 1];
-
-        for(int l = 1; l <= getL(); l++)
-        {
-            float interpolationIndex = kappa * l;
-            kFloor[l] = (int)Math.floor(interpolationIndex);
-            s[l] = interpolationIndex - kFloor[l];
-        }
-
-        return new InterpolationParameters(kFloor, s);
     }
 
     private float getPredictionResidualAverage(float[] predictionResiduals)
@@ -227,38 +211,43 @@ public class AMBEModelParameters extends MBEModelParameters
         return lambdaSum / (float)getL();
     }
 
-    private float getScaledInterpolationSum(float[] previousA, int previousL, InterpolationParameters interpolationParameters)
+    private float getScaledInterpolationSum(float[] previousA, int previousL, float kappa)
     {
         float summation43 = 0.0f;
 
         for(int l = 1; l <= getL(); l++)
         {
-            float aklPrevious = getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor(l));
+            float interpolationIndex = kappa * l;
+            int kFloor = (int)Math.floor(interpolationIndex);
+            float s = interpolationIndex - kFloor;
+            float aklPrevious = getPreviousLogSpectralAmplitude(previousA, previousL, kFloor);
             int nextBandIndex = getNextBandIndex(l);
-            float aklPlus1Previous =
-                getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor(nextBandIndex));
-            summation43 += ((1.0f - interpolationParameters.getS(l)) * aklPrevious)
-                + (interpolationParameters.getS(l) * aklPlus1Previous);
+            int nextKFloor = (int)Math.floor(kappa * nextBandIndex);
+            float aklPlus1Previous = getPreviousLogSpectralAmplitude(previousA, previousL, nextKFloor);
+            summation43 += ((1.0f - s) * aklPrevious) + (s * aklPlus1Previous);
         }
 
         return summation43 * (0.65f / (float)getL());
     }
 
     private float[] createLogSpectralAmplitudes(float[] predictionResiduals, float[] previousA, int previousL,
-        InterpolationParameters interpolationParameters, float summation43, float gain)
+        float kappa, float summation43, float gain)
     {
         float[] logSpectralAmplitudes = new float[getL() + 1];
         logSpectralAmplitudes[0] = 1.0f;
 
         for(int l = 1; l <= getL(); l++)
         {
-            float aklPrevious = getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor(l));
+            float interpolationIndex = kappa * l;
+            int kFloor = (int)Math.floor(interpolationIndex);
+            float s = interpolationIndex - kFloor;
+            float aklPrevious = getPreviousLogSpectralAmplitude(previousA, previousL, kFloor);
             int nextBandIndex = getNextBandIndex(l);
-            float aklPlus1Previous =
-                getPreviousLogSpectralAmplitude(previousA, previousL, interpolationParameters.getKFloor(nextBandIndex));
+            int nextKFloor = (int)Math.floor(kappa * nextBandIndex);
+            float aklPlus1Previous = getPreviousLogSpectralAmplitude(previousA, previousL, nextKFloor);
             logSpectralAmplitudes[l] = predictionResiduals[l]
-                + (0.65f * (1.0f - interpolationParameters.getS(l)) * aklPrevious)
-                + (0.65f * interpolationParameters.getS(l) * aklPlus1Previous)
+                + (0.65f * (1.0f - s) * aklPrevious)
+                + (0.65f * s * aklPlus1Previous)
                 - summation43
                 + gain;
         }
@@ -298,28 +287,6 @@ public class AMBEModelParameters extends MBEModelParameters
     private int getNextBandIndex(int l)
     {
         return l < getL() ? l + 1 : getL();
-    }
-
-    private static final class InterpolationParameters
-    {
-        private final int[] mKFloor;
-        private final float[] mS;
-
-        private InterpolationParameters(int[] kFloor, float[] s)
-        {
-            mKFloor = kFloor;
-            mS = s;
-        }
-
-        private int getKFloor(int index)
-        {
-            return mKFloor[index];
-        }
-
-        private float getS(int index)
-        {
-            return mS[index];
-        }
     }
 
     private float[] decodeGainVector(int b3, int b4)

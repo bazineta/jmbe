@@ -112,9 +112,12 @@ public abstract class MBESynthesizer
     private final WhiteNoiseGenerator mWhiteNoiseGenerator = new WhiteNoiseGenerator();
     private final MBENoiseSequenceGenerator mMBENoiseSequenceGenerator = new MBENoiseSequenceGenerator();
     private final FloatFFT_1D mFFT = new FloatFFT_1D(256);
+    private final float[] mNoiseSamples = new float[256];
     private final float[] mDftBinScalor = new float[128];
     private float[] mPreviousPhaseO = new float[57];
     private float[] mPreviousPhaseV = new float[57];
+    private float[] mCurrentPhaseO = new float[57];
+    private float[] mCurrentPhaseV = new float[57];
     private float[] mPreviousUw = new float[256];
 
     protected MBESynthesizer()
@@ -199,21 +202,19 @@ public abstract class MBESynthesizer
     public float[] getVoice(MBEModelParameters parameters)
     {
         //Alg #117 - generate white noise samples.
-        float[] u = mMBENoiseSequenceGenerator.nextBuffer();
+        float[] u = mMBENoiseSequenceGenerator.nextBuffer(mNoiseSamples);
 
         float[] voiced = getVoiced(parameters, u);
         applyWindowInPlace(u);
         float[] unvoiced = getUnvoicedFromWindowed(parameters, u);
 
-        float[] audio = new float[160];
-
         //Alg #142 - combine voiced and unvoiced audio samples to form the completed audio samples.
         for(int x = 0; x < 160; x++)
         {
-            audio[x] = clip((voiced[x] + unvoiced[x]) * AUDIO_SCALAR_16_BITS_SIGNED);
+            voiced[x] = clip((voiced[x] + unvoiced[x]) * AUDIO_SCALAR_16_BITS_SIGNED);
         }
 
-        return audio;
+        return voiced;
     }
 
     /**
@@ -290,15 +291,13 @@ public abstract class MBESynthesizer
         //Alg #122 and #123 - generate the 256 FFT bins to L frequency band mapping from the fundamental frequency
         boolean[] voicedBands = parameters.getVoicingDecisions();
         float[] M = parameters.getEnhancedSpectralAmplitudes();
-        int[] a_min = getFrequencyBandEdgeMinimums(parameters);
-        int[] b_max = getFrequencyBandEdgeMaximums(parameters);
 
         //Alg 118 - perform 256-point DFT against samples.  We use the JTransforms library to calculate an FFT against
         // the 256 element sample array that contains zeros for all elements greater than 209
         mFFT.realForward(Uw);
         //NOTE: from this point forward, Uw contains the DFT frequency bins (uw)
 
-        float[] dftBinScalor = getUnvoicedBandScalars(parameters, voicedBands, M, a_min, b_max, Uw);
+        float[] dftBinScalor = getUnvoicedBandScalars(parameters, voicedBands, M, Uw);
 
         // Alg 119, 120 & 124 - scale the DFT bins in the a-b min/max bin ranges.  Since the binScalor array is
         // initialized to zero, this also zeroizes any of lowest and highest frequency DFT bins per Alg 124 that weren't
@@ -321,7 +320,7 @@ public abstract class MBESynthesizer
     }
 
     private float[] getUnvoicedBandScalars(MBEModelParameters parameters, boolean[] voicedBands, float[] amplitudes,
-        int[] minimums, int[] maximums, float[] dftBins)
+        float[] dftBins)
     {
         //Alg 120 - determine band-level scaling value for each DFT bin for unvoiced samples and zeroize all voiced and
         // out-of-band bins.  The denominator in this algorithm is the average bin energy per band calculated by summing
@@ -330,14 +329,17 @@ public abstract class MBESynthesizer
         // value for each of the unvoiced bands and apply the unvoiced scaling coefficient and the decoded amplitude for
         // the band.
         Arrays.fill(mDftBinScalor, 0.0f);
+        float multiplier = TWO56_OVER_TWO_PI * parameters.getFundamentalFrequency();
 
         for(int l = 1; l <= parameters.getL(); l++)
         {
             if(!voicedBands[l])
             {
-                float scalor = getUnvoicedBandScalar(amplitudes[l], minimums[l], maximums[l], dftBins);
+                int minimum = (int)Math.ceil((l - 0.5f) * multiplier);
+                int maximum = (int)Math.ceil((l + 0.5f) * multiplier);
+                float scalor = getUnvoicedBandScalar(amplitudes[l], minimum, maximum, dftBins);
 
-                for(int n = minimums[l]; n < maximums[l]; n++)
+                for(int n = minimum; n < maximum; n++)
                 {
                     if(n < 128)
                     {
@@ -416,7 +418,7 @@ public abstract class MBESynthesizer
         float phaseOffsetPerFrame = averageFrequency * SAMPLES_PER_FRAME;
 
         //Alg #139 - calculate current phase angle for each harmonic
-        float[] currentPhaseV = new float[57];
+        float[] currentPhaseV = mCurrentPhaseV;
 
         //Update each of the phase values
         for(int l = 1; l <= 56; l++)
@@ -431,6 +433,7 @@ public abstract class MBESynthesizer
         //Short circuit if there are no voiced bands and return an array of zeros
         if(!previousFrame.hasVoicedBands() && !currentFrame.hasVoicedBands())
         {
+            mCurrentPhaseV = mPreviousPhaseV;
             mPreviousPhaseV = currentPhaseV;
             return new float[160];
         }
@@ -451,7 +454,7 @@ public abstract class MBESynthesizer
         int unvoicedBandCount = currentFrame.getUnvoicedBandCount();
 
         //Alg #139 - calculate current phase angle for each harmonic
-        float[] currentPhaseO = new float[57];
+        float[] currentPhaseO = mCurrentPhaseO;
         int threshold = (int)Math.floor(currentL / 4.0f);
 
         //Update each of the phase values
@@ -533,7 +536,9 @@ public abstract class MBESynthesizer
             }
         }
 
+        mCurrentPhaseV = mPreviousPhaseV;
         mPreviousPhaseV = currentPhaseV;
+        mCurrentPhaseO = mPreviousPhaseO;
         mPreviousPhaseO = currentPhaseO;
 
         return voiced;

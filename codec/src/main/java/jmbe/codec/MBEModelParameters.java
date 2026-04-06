@@ -319,59 +319,56 @@ public abstract class MBEModelParameters
     private void enhanceSpectralAmplitudes(float previousLocalEnergy, int previousAmplitudeThreshold)
     {
         /* Algorithm #105 and #106 - calculate RM0 and RM1 from amplitudes */
-        float[] RM = new float[2];
-
         float[] spectralAmplitudes = getSpectralAmplitudes();
 
         int L = getL();
+        float rm0 = 0.0f;
+        float rm1 = 0.0f;
 
         for(int l = 1; l <= L; l++)
         {
             float amplitudesSquared = spectralAmplitudes[l] * spectralAmplitudes[l];
-            RM[0] += amplitudesSquared;
-            RM[1] += (amplitudesSquared * Math.cos(getFundamentalFrequency() * l));
+            rm0 += amplitudesSquared;
+            rm1 = (float)(rm1 + (amplitudesSquared * Math.cos(getFundamentalFrequency() * l)));
         }
 
-        float[] W = new float[L + 1];
-
-        float rm0squared = RM[0] * RM[0];
-        float rm1squared = RM[1] * RM[1];
+        float rm0squared = rm0 * rm0;
+        float rm1squared = rm1 * rm1;
 
         float[] enhancedSpectralAmplitudes = new float[L + 1];
 
-        if(RM[0] == 0.0f)
+        if(rm0 == 0.0f)
         {
             setEnhancedSpectralAmplitudes(enhancedSpectralAmplitudes);
             return;
         }
 
-        /* Algorithm #107 - calculate enhancement weights (W) */
-        for(int l = 1; l <= getL(); l++)
-        {
-            float temp = (PI_96 * (rm0squared + rm1squared -
-                (2.0f * RM[0] * RM[1] * (float)Math.cos(getFundamentalFrequency() * l)))) /
-                (getFundamentalFrequency() * RM[0] * (rm0squared - rm1squared));
-            W[l] = (float)(Math.sqrt(spectralAmplitudes[l]) * Math.pow(temp, 0.25));
-        }
-
-        /* Algorithm #108 - apply weights to produce enhanced amplitudes */
+        /* Algorithm #107 and #108 - calculate and apply enhancement weights to produce enhanced amplitudes */
         for(int l = 1; l <= L; l++)
         {
             if((8 * l) <= L)
             {
                 enhancedSpectralAmplitudes[l] = spectralAmplitudes[l];
             }
-            else if(W[l] > 1.2f)
-            {
-                enhancedSpectralAmplitudes[l] = spectralAmplitudes[l] * 1.2f;
-            }
-            else if(W[l] < 0.5f)
-            {
-                enhancedSpectralAmplitudes[l] = spectralAmplitudes[l] * 0.5f;
-            }
             else
             {
-                enhancedSpectralAmplitudes[l] = spectralAmplitudes[l] * W[l];
+                float temp = (PI_96 * (rm0squared + rm1squared -
+                    (2.0f * rm0 * rm1 * (float)Math.cos(getFundamentalFrequency() * l)))) /
+                    (getFundamentalFrequency() * rm0 * (rm0squared - rm1squared));
+                float weight = (float)(Math.sqrt(spectralAmplitudes[l]) * Math.pow(temp, 0.25));
+
+                if(weight > 1.2f)
+                {
+                    enhancedSpectralAmplitudes[l] = spectralAmplitudes[l] * 1.2f;
+                }
+                else if(weight < 0.5f)
+                {
+                    enhancedSpectralAmplitudes[l] = spectralAmplitudes[l] * 0.5f;
+                }
+                else
+                {
+                    enhancedSpectralAmplitudes[l] = spectralAmplitudes[l] * weight;
+                }
             }
         }
 
@@ -387,7 +384,7 @@ public abstract class MBEModelParameters
 
         if(denominator > 0.0f)
         {
-            y = (float)Math.sqrt(RM[0] / denominator);
+            y = (float)Math.sqrt(rm0 / denominator);
         }
 
         /* Algorithm #110 - scale enhanced amplitudes to remove energy differential */
@@ -397,7 +394,7 @@ public abstract class MBEModelParameters
         }
 
         /* Algorithm #111 - calculate local energy */
-        mLocalEnergy = (0.95f * previousLocalEnergy) + (0.05f * RM[0]);
+        mLocalEnergy = (0.95f * previousLocalEnergy) + (0.05f * rm0);
 
         if(mLocalEnergy < 10000.0f)
         {

@@ -326,10 +326,10 @@ public class IMBEFrame
      */
     public float[] getLog2SpectralAmplitudes(IMBEModelParameters previousParameters)
     {
-        float L = (float)getFundamentalFrequency().getL();
-        int Lplus1 = getFundamentalFrequency().getL() + 1;
-
-        int previousL = previousParameters.getL();
+        int   currentL  = getFundamentalFrequency().getL();
+        float L         = currentL;
+        int   Lplus1    = currentL + 1;
+        int   previousL = previousParameters.getL();
 
         //Get previous frame's log2M entries and resize them to 1 greater than the max of the current L, or the
         //previous L.  Set any newly expanded indexes to the value of the previously highest numbered index
@@ -341,27 +341,17 @@ public class IMBEFrame
 
         float scale = previousL / L;
 
-        float[] kl = new float[Lplus1];
-        int[] klFloor = new int[Lplus1];
-        float[] sl = new float[Lplus1];
-
-        for(int l = 1; l < Lplus1; l++)
-        {
-            /* Algorithm #75 - calculate kl */
-            kl[l] = l * scale;
-
-            klFloor[l] = (int)Math.floor(kl[l]);
-
-            /* Algorithm #76 - calculate sl */
-            sl[l] = kl[l] - klFloor[l];
-        }
-
         float sum = 0.0f;
 
         for(int l = 1; l < Lplus1; l++)
         {
+            /* Algorithm #75 and #76 - calculate kl and sl */
+            float kl = l * scale;
+            int klFloor = (int)Math.floor(kl);
+            float sl = kl - klFloor;
+
             /* Algorithm #77 partial - summation */
-            sum += ((1.0f - sl[l]) * previousLog2M[klFloor[l]]) + (sl[l] * previousLog2M[klFloor[l] + 1]);
+            sum += ((1.0f - sl) * previousLog2M[klFloor]) + (sl * previousLog2M[klFloor + 1]);
         }
 
         /* Algorithm #77 - log2M spectral amplitudes of current frame */
@@ -388,11 +378,15 @@ public class IMBEFrame
         float plSum = p / L * sum;
 
         //Algorithm #77
-        for(int l = 1; l <= L; l++)
+        for(int l = 1; l <= currentL; l++)
         {
+            float kl = l * scale;
+            int klFloor = (int)Math.floor(kl);
+            float sl = kl - klFloor;
+
             log2M[l] = T[l]
-                + (p * (1.0f - sl[l]) * previousLog2M[klFloor[l]])
-                + (p * sl[l] * previousLog2M[klFloor[l] + 1])
+                + (p * (1.0f - sl) * previousLog2M[klFloor])
+                + (p * sl * previousLog2M[klFloor + 1])
                 - plSum;
         }
 

@@ -38,7 +38,15 @@ public class MBENoiseSequenceGenerator
      */
     public float[] nextBuffer()
     {
-        float[] copy = Arrays.copyOf(mCurrentBuffer, mCurrentBuffer.length);
+        return nextBuffer(Arrays.copyOf(mCurrentBuffer, mCurrentBuffer.length));
+    }
+
+    /**
+     * Copies the next 256 white noise samples into the provided buffer.
+     */
+    public float[] nextBuffer(float[] copy)
+    {
+        System.arraycopy(mCurrentBuffer, 0, copy, 0, mCurrentBuffer.length);
 
         //Shift the end 96 samples to the beginning so that we can generate 160 new samples
         System.arraycopy(mCurrentBuffer, 160, mCurrentBuffer, 0, 96);
