@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  */
 public class AMBEModelParameters extends MBEModelParameters
 {
-    private final static Logger mLog = LoggerFactory.getLogger(AMBEModelParameters.class);
+    private static final Logger mLog = LoggerFactory.getLogger(AMBEModelParameters.class);
 
     private static final float ONE_OVER_TWO_SQR_TWO = 1.0f / (2.0f * (float)Math.sqrt(2.0f));
     private static final float TWO_PI = 2.0f * (float)Math.PI;
@@ -219,11 +219,11 @@ public class AMBEModelParameters extends MBEModelParameters
 
             for(int m = 2; m <= 8; m++)
             {
-                R[i] += (2.0 * G[m] * (float)Math.cos(((float)Math.PI * (float)(m - 1) * ((float)i - 0.5f)) / 8.0f));
+                R[i] += (2.0 * G[m] * (float)Math.cos(((float)Math.PI * (m - 1) * (i - 0.5f)) / 8.0f));
             }
         }
 
-        float C[][] = new float[5][18];
+        float[][] C = new float[5][18];
 
         //Alg 29,31,33,35
         C[1][1] = 0.5f * (R[1] + R[2]);
@@ -300,7 +300,7 @@ public class AMBEModelParameters extends MBEModelParameters
                 for(int k = 2; k <= J[i]; k++)
                 {
                     acc += 2.0f * C[i][k] *
-                        (float)Math.cos(((float)Math.PI * (float)(k - 1) * ((float)j - 0.5f)) / (float)J[i]);
+                        (float)Math.cos(((float)Math.PI * (k - 1) * (j - 0.5f)) / J[i]);
                 }
 
                 T[lPointer++] = acc;
@@ -310,7 +310,7 @@ public class AMBEModelParameters extends MBEModelParameters
         int previousL = previousParameters.getL();
 
         //Alg 40 & 41
-        float kappa = (float)previousL / (float)getL();
+        float kappa = previousL / (float)getL();
 
         float[] k = new float[getL() + 1];
         int[] kFloor = new int[getL() + 1];
@@ -323,7 +323,7 @@ public class AMBEModelParameters extends MBEModelParameters
 
         for(int l = 1; l <= getL(); l++)
         {
-            k[l] = kappa * (float)l;
+            k[l] = kappa * l;
             kFloor[l] = (int)Math.floor(k[l]);
             s[l] = k[l] - kFloor[l];
         }

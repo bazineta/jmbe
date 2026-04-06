@@ -258,7 +258,7 @@ public enum IMBEFundamentalFrequency implements IFundamentalFrequency
     IMBEFundamentalFrequency(int index)
     {
         mIndex = index;
-        mFrequency = (float)(4.0 * Math.PI / ((double)index + 39.5));
+        mFrequency = (float)(4.0 * Math.PI / (index + 39.5));
         mL = (int)Math.floor(0.9254 * Math.floor((Math.PI / mFrequency) + 0.25));
     }
 

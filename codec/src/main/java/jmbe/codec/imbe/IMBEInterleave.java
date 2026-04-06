@@ -37,6 +37,10 @@ public class IMBEInterleave
 		67,139,115,20,44,68,92,116,140,45,21,93,69,141,117,22,46,70,94,118,142,
 		47,23,95,71,143,119 };
 
+	private IMBEInterleave()
+	{
+	}
+
 	public static void deinterleave( BinaryFrame frame )
 	{
 		BitSet original = frame.get( 0, 144 );

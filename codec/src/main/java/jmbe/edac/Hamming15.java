@@ -26,6 +26,10 @@ public class Hamming15
 	private static int[] CHECKSUMS = new int[] { 0xF,0xE,0xD,0xC,0xB,0XA,0x9,
 		0x7,0x6,0x5,0x3 };
 
+	private Hamming15()
+	{
+	}
+
 	/**
 	 * Performs error detection and correction of any single-bit errors.
 	 * 

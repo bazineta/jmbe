@@ -41,13 +41,6 @@ public class ToneGenerator
     private Oscillator mOscillator2 = new Oscillator(0.0, SAMPLE_RATE);
 
     /**
-     * Constructs an instance
-     */
-    public ToneGenerator()
-    {
-    }
-
-    /**
      * Generates 20 ms of PCM audio samples at 8000Hz sample rate using the specified frequency and gain parameters
      *
      * @param toneParameters containing frequency(s) and amplitude

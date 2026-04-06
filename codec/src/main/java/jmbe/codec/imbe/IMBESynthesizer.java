@@ -40,15 +40,8 @@ import java.nio.ByteOrder;
  */
 public class IMBESynthesizer extends MBESynthesizer
 {
-    private final static Logger mLog = LoggerFactory.getLogger(IMBESynthesizer.class);
+    private static final Logger mLog = LoggerFactory.getLogger(IMBESynthesizer.class);
     private IMBEModelParameters mPreviousParameters = new IMBEModelParameters();
-
-    /**
-     * Synthesizes 8 kHz 16-bit audio from IMBE audio frames
-     */
-    public IMBESynthesizer()
-    {
-    }
 
     @Override
     public MBEModelParameters getPreviousFrame()

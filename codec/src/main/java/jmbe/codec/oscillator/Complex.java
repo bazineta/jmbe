@@ -29,7 +29,7 @@ import java.io.Serializable;
  */
 public class Complex implements Serializable
 {
-    private final static Logger mLog = LoggerFactory.getLogger(Complex.class);
+    private static final Logger mLog = LoggerFactory.getLogger(Complex.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -232,7 +232,7 @@ public class Complex implements Serializable
      */
     public float norm()
     {
-        return (float)((inphase() * inphase()) +
+        return ((inphase() * inphase()) +
             (quadrature() * quadrature()));
     }
 
@@ -245,7 +245,7 @@ public class Complex implements Serializable
 
         if(magnitude != 0)
         {
-            multiply((float)(1.0f / magnitude()));
+            multiply((1.0f / magnitude()));
         }
     }
 
@@ -256,7 +256,7 @@ public class Complex implements Serializable
      */
     public void fastNormalize()
     {
-        multiply((float)(1.9999f - magnitudeSquared()));
+        multiply((1.9999f - magnitudeSquared()));
     }
 
     /**

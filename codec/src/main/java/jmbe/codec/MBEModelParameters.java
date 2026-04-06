@@ -326,7 +326,7 @@ public abstract class MBEModelParameters
         {
             float amplitudesSquared = spectralAmplitudes[l] * spectralAmplitudes[l];
             RM[0] += amplitudesSquared;
-            RM[1] += (amplitudesSquared * Math.cos(getFundamentalFrequency() * (float)l));
+            RM[1] += (amplitudesSquared * Math.cos(getFundamentalFrequency() * l));
         }
 
         float[] W = new float[L + 1];
@@ -346,7 +346,7 @@ public abstract class MBEModelParameters
         for(int l = 1; l <= getL(); l++)
         {
             float temp = (PI_96 * (rm0squared + rm1squared -
-                (2.0f * RM[0] * RM[1] * (float)Math.cos(getFundamentalFrequency() * (float)l)))) /
+                (2.0f * RM[0] * RM[1] * (float)Math.cos(getFundamentalFrequency() * l)))) /
                 (getFundamentalFrequency() * RM[0] * (rm0squared - rm1squared));
             W[l] = (float)(Math.sqrt(spectralAmplitudes[l]) * Math.pow(temp, 0.25));
         }
@@ -468,7 +468,7 @@ public abstract class MBEModelParameters
         //Algorithm #116 - scale enhanced spectral amplitudes if amplitude measure is greater than amplitude threshold
         if(Am > Tm)
         {
-            float scale = (float)Tm / Am;
+            float scale = Tm / Am;
 
             for(int l = 1; l < getL() + 1; l++)
             {

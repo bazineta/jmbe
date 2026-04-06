@@ -45,7 +45,7 @@ import java.util.List;
 
 public class AMBESynthesizer extends MBESynthesizer
 {
-    private final static Logger mLog = LoggerFactory.getLogger(AMBESynthesizer.class);
+    private static final Logger mLog = LoggerFactory.getLogger(AMBESynthesizer.class);
 
     private ToneGenerator mToneGenerator = new ToneGenerator();
     private AMBEModelParameters mPreviousFrame = new AMBEModelParameters();
@@ -263,8 +263,8 @@ public class AMBESynthesizer extends MBESynthesizer
                 {
                     sb.append("\n");
                 }
-                double start = (double)x * frameMultiplier;
-                double end = (double)(x + 1) * frameMultiplier;
+                double start = x * frameMultiplier;
+                double end = (x + 1) * frameMultiplier;
                 sb.append(df.format(start)).append("\t").append(df.format(end)).append("\t").append((x + 1));
             }
 

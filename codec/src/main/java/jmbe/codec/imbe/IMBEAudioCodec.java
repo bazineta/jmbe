@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 public class IMBEAudioCodec implements IAudioCodec
 {
-    private final static Logger mLog = LoggerFactory.getLogger(IMBEAudioCodec.class);
+    private static final Logger mLog = LoggerFactory.getLogger(IMBEAudioCodec.class);
 
     public static final String CODEC_NAME = "IMBE";
 

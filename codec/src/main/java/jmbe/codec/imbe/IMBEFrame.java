@@ -201,7 +201,7 @@ public class IMBEFrame
             if(indexSet.length > 0)
             {
                 int b = mFrame.getInt(indexSet);
-                G[m - 1] = stepSizes.getStepSizes()[m - 3] * ((float)b - COEFFICIENT_OFFSET[indexSet.length]);
+                G[m - 1] = stepSizes.getStepSizes()[m - 3] * (b - COEFFICIENT_OFFSET[indexSet.length]);
             }
         }
 
@@ -217,7 +217,7 @@ public class IMBEFrame
 
             for(int m = 2; m <= 6; m++)
             {
-                C[i][1] += (2.0f * G[m] * (float)Math.cos((Math.PI * (float)(m - 1) * ((float)i - 0.5f)) / 6.0f));
+                C[i][1] += (2.0f * G[m] * (float)Math.cos((Math.PI * (m - 1) * (i - 0.5f)) / 6.0f));
             }
         }
 
@@ -239,7 +239,7 @@ public class IMBEFrame
                     if(indexSet.length > 0)
                     {
                         int b = mFrame.getInt(indexSet);
-                        C[i][j] = stepSizes.getStepSizes()[m - 3] * ((float)b - COEFFICIENT_OFFSET[indexSet.length]);
+                        C[i][j] = stepSizes.getStepSizes()[m - 3] * (b - COEFFICIENT_OFFSET[indexSet.length]);
                     }
                 }
             }
@@ -262,7 +262,7 @@ public class IMBEFrame
                 {
                     for(int k = 2; k <= Ji; k++)
                     {
-                        T[l] += 2.0f * C[i][k] * (float)Math.cos((Math.PI * (float)(k - 1) * ((float)j - 0.5f)) / (float)Ji);
+                        T[l] += 2.0f * C[i][k] * (float)Math.cos((Math.PI * (k - 1) * (j - 0.5f)) / Ji);
                     }
                 }
 
@@ -338,7 +338,7 @@ public class IMBEFrame
         //Current frame spectral amplitude prediction residuals
         float[] T = getSpectralAmplitudePredictionResiduals();
 
-        float scale = (float)previousL / L;
+        float scale = previousL / L;
 
         float[] kl = new float[Lplus1];
         int[] klFloor = new int[Lplus1];
@@ -347,12 +347,12 @@ public class IMBEFrame
         for(int l = 1; l < Lplus1; l++)
         {
             /* Algorithm #75 - calculate kl */
-            kl[l] = (float)l * scale;
+            kl[l] = l * scale;
 
             klFloor[l] = (int)Math.floor(kl[l]);
 
             /* Algorithm #76 - calculate sl */
-            sl[l] = kl[l] - (float)klFloor[l];
+            sl[l] = kl[l] - klFloor[l];
         }
 
         float sum = 0.0f;
