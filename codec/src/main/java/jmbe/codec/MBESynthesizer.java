@@ -63,31 +63,6 @@ public abstract class MBESynthesizer
         0.58f, 0.56f, 0.54f, 0.52f, 0.50f, 0.48f, 0.46f, 0.44f, 0.42f, 0.40f,
         0.38f, 0.36f, 0.34f, 0.32f, 0.30f, 0.30f, 0.28f, 0.26f, 0.24f, 0.22f,
         0.20f, 0.18f, 0.16f, 0.14f, 0.12f, 0.10f, 0.08f, 0.06f, 0.04f, 0.02f, 0.0f};
-    private static final float[] PITCH_REFINEMENT_WINDOW = new float[]{
-        0.014873f, 0.017397f, 0.020102f, 0.022995f, 0.026081f, 0.029365f, 0.032852f, 0.036546f, 0.040451f, 0.044573f,
-        0.048915f, 0.053482f, 0.058277f, 0.063303f, 0.068563f, 0.074062f, 0.079801f, 0.085782f, 0.092009f, 0.098483f,
-        0.105205f, 0.112176f, 0.119398f, 0.126872f, 0.134596f, 0.142572f, 0.150799f, 0.159276f, 0.168001f, 0.176974f,
-        0.186192f, 0.195653f, 0.205355f, 0.215294f, 0.225466f, 0.235869f, 0.246497f, 0.257347f, 0.268413f, 0.279689f,
-        0.291171f, 0.302851f, 0.314724f, 0.326782f, 0.339018f, 0.351425f, 0.363994f, 0.376718f, 0.389588f, 0.402594f,
-        0.415727f, 0.428978f, 0.442337f, 0.455793f, 0.469336f, 0.482955f, 0.496640f, 0.510379f, 0.524160f, 0.537971f,
-        0.551802f, 0.565639f, 0.579470f, 0.593284f, 0.607067f, 0.620807f, 0.634490f, 0.648105f, 0.661638f, 0.675076f,
-        0.688406f, 0.701616f, 0.714692f, 0.727620f, 0.740390f, 0.752986f, 0.765397f, 0.777610f, 0.789612f, 0.801391f,
-        0.812935f, 0.824231f, 0.835267f, 0.846033f, 0.856516f, 0.866705f, 0.876589f, 0.886157f, 0.895400f, 0.904307f,
-        0.912868f, 0.921074f, 0.928916f, 0.936386f, 0.943474f, 0.950174f, 0.956477f, 0.962377f, 0.967866f, 0.972940f,
-        0.977592f, 0.981817f, 0.985610f, 0.988967f, 0.991884f, 0.994358f, 0.996386f, 0.997966f, 0.999095f, 0.999774f,
-        1.000000f, 0.999774f, 0.999095f, 0.997966f, 0.996386f, 0.994358f, 0.991884f, 0.988967f, 0.985610f, 0.981817f,
-        0.977592f, 0.972940f, 0.967866f, 0.962377f, 0.956477f, 0.950174f, 0.943474f, 0.936386f, 0.928916f, 0.921074f,
-        0.912868f, 0.904307f, 0.895400f, 0.886157f, 0.876589f, 0.866705f, 0.856516f, 0.846033f, 0.835267f, 0.824231f,
-        0.812935f, 0.801391f, 0.789612f, 0.777610f, 0.765397f, 0.752986f, 0.740390f, 0.727620f, 0.714692f, 0.701616f,
-        0.688406f, 0.675076f, 0.661638f, 0.648105f, 0.634490f, 0.620807f, 0.607067f, 0.593284f, 0.579470f, 0.565639f,
-        0.551802f, 0.537971f, 0.524160f, 0.510379f, 0.496640f, 0.482955f, 0.469336f, 0.455793f, 0.442337f, 0.428978f,
-        0.415727f, 0.402594f, 0.389588f, 0.376718f, 0.363994f, 0.351425f, 0.339018f, 0.326782f, 0.314724f, 0.302851f,
-        0.291171f, 0.279689f, 0.268413f, 0.257347f, 0.246497f, 0.235869f, 0.225466f, 0.215294f, 0.205355f, 0.195653f,
-        0.186192f, 0.176974f, 0.168001f, 0.159276f, 0.150799f, 0.142572f, 0.134596f, 0.126872f, 0.119398f, 0.112176f,
-        0.105205f, 0.098483f, 0.092009f, 0.085782f, 0.079801f, 0.074062f, 0.068563f, 0.063303f, 0.058277f, 0.053482f,
-        0.048915f, 0.044573f, 0.040451f, 0.036546f, 0.032852f, 0.029365f, 0.026081f, 0.022995f, 0.020102f, 0.017397f,
-        0.014873f
-    };
     // Derived from the fixed synthesis window table above for zero-based audio sample indexes in one frame
     // (n = 0..SAMPLES_PER_FRAME - 1). This is not harmonic/band indexing. If that table changes, these values must be
     // recalculated to keep the weighted overlap-add denominator correct.
@@ -135,44 +110,6 @@ public abstract class MBESynthesizer
     protected abstract MBEModelParameters getPreviousFrame();
 
     /**
-     * Calculates the minimum 256-point DFT index for each of the L frequency bands
-     *
-     * Alg #122
-     */
-    private static int[] getFrequencyBandEdgeMinimums(MBEModelParameters voiceParameters)
-    {
-        int[] a = new int[voiceParameters.getL() + 1];
-
-        float multiplier = TWO56_OVER_TWO_PI * voiceParameters.getFundamentalFrequency();
-
-        for(int l = 1; l <= voiceParameters.getL(); l++)
-        {
-            a[l] = (int)Math.ceil((l - 0.5f) * multiplier);
-        }
-
-        return a;
-    }
-
-    /**
-     * Calculates the maximum 256-point DFT index for each of the L frequency bands
-     *
-     * Alg #123
-     */
-    private static int[] getFrequencyBandEdgeMaximums(MBEModelParameters voiceParameters)
-    {
-        int[] b = new int[voiceParameters.getL() + 1];
-
-        float multiplier = TWO56_OVER_TWO_PI * voiceParameters.getFundamentalFrequency();
-
-        for(int x = 1; x <= voiceParameters.getL(); x++)
-        {
-            b[x] = (int)Math.ceil((x + 0.5f) * multiplier);
-        }
-
-        return b;
-    }
-
-    /**
      * Returns the speech synthesis window coefficient from appendix I
      */
     private static float synthesisWindow(int n)
@@ -183,19 +120,6 @@ public abstract class MBESynthesizer
         }
 
         return SYNTHESIS_WINDOW[n + 105];
-    }
-
-    /**
-     * Returns the pitch refinement window coefficient from appendix C
-     */
-    private static float pitchRefinementWindow(int n)
-    {
-        if(n < -110 || n > 110)
-        {
-            return 0.0f;
-        }
-
-        return PITCH_REFINEMENT_WINDOW[n + 110];
     }
 
     /**
@@ -254,26 +178,6 @@ public abstract class MBESynthesizer
     protected float[] getWhiteNoise()
     {
         return mWhiteNoiseGenerator.getSamples(SAMPLES_PER_FRAME, 0.003f);
-    }
-
-    /**
-     * Generates the unvoiced component of the audio signal using a white noise
-     * generator where the frequency components corresponding to the voiced
-     * harmonics are removed from the white noise.
-     *
-     * @param parameters from the voice frame
-     * @return - 160 samples of unvoiced audio component
-     */
-    private float[] getUnvoiced(MBEModelParameters parameters, float[] whiteNoiseSamples)
-    {
-        float[] Uw = new float[whiteNoiseSamples.length];
-
-        for(int x = 0; x < whiteNoiseSamples.length; x++)
-        {
-            Uw[x] = whiteNoiseSamples[x] * synthesisWindow(x - 128);
-        }
-
-        return getUnvoicedFromWindowed(parameters, Uw);
     }
 
     private float[] getUnvoicedFromWindowed(MBEModelParameters parameters, float[] Uw)
