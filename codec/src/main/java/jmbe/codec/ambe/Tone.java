@@ -165,12 +165,13 @@ enum Tone
     private String mLabel;
     private double mFrequency1;
     private double mFrequency2;
+    private String mMetadataKey;
 
     private static final Tone[] LOOKUP_TABLE = new Tone[164];
 
     static
     {
-        for(Tone tone: Tone.values())
+        for(Tone tone: values())
         {
             if(0 <= tone.mValue && tone.mValue < LOOKUP_TABLE.length)
             {
@@ -191,6 +192,7 @@ enum Tone
         mLabel = label;
         mFrequency1 = frequency1;
         mFrequency2 = frequency2;
+        mMetadataKey = getMetadataKey(value);
     }
 
     @Override
@@ -223,26 +225,26 @@ enum Tone
         return mFrequency2 > 0.0;
     }
 
+    /**
+     * Metadata key for this tone if it is a valid tone with a defined
+     * metadata key; otherwise null
+     */
     String getMetadataKey()
     {
-        if(T160.mValue <= mValue && mValue <= T163.mValue)
-        {
-            return "CALL PROGRESS";
-        }
-        else if(T5.mValue <= mValue && mValue <= T122.mValue)
-        {
-            return "TONE";
-        }
-        else if(T128_DTMF_0.mValue <= mValue && mValue <= T143_DTMF_POUND.mValue)
-        {
-            return "DTMF";
-        }
-        else if(T144_KNOX_0.mValue <= mValue && mValue <= T159_KNOX_POUND.mValue)
-        {
-            return "KNOX";
-        }
+        return mMetadataKey;
+    }
 
-        return null;
+    /**
+     * Determines the metadata key for a given tone value at construction
+     * time of the enumeration entries.
+     */
+    private static String getMetadataKey(int value)
+    {
+        if     (5   <= value && value <= 122) return "TONE";
+        else if(128 <= value && value <= 143) return "DTMF";
+        else if(144 <= value && value <= 159) return "KNOX";
+        else if(160 <= value && value <= 163) return "CALL PROGRESS";
+        else                                  return null;
     }
 
     /**
