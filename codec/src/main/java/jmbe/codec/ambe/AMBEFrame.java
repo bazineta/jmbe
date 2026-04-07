@@ -230,6 +230,15 @@ class AMBEFrame
         throw new IllegalStateException("Frame type [" + getFrameType() + "] does not provide tone model parameters");
     }
 
+    /**
+     * Gets the audio samples for this frame along with any associated metadata
+     * such as tones or dtmf/knox codes, if present.  For non-tone frames, the
+     * metadata will be empty.  For tone frames, the metadata will include
+     * the tone information as a single key-value pair.
+     *
+     * @param audio samples for this frame
+     * @return audio and any associated metadata such as tones or dtmf/knox codes
+     */
     AudioWithMetadata getAudioWithMetadata(float[] audio)
     {
         if(getFrameType() == FrameType.TONE)
