@@ -161,11 +161,11 @@ enum Tone
     T163(163, "CALL PROGRESS", 490.0, 350.0),
     INVALID(-1, "INVALID", 0.0, 0.0);
 
-    private int mValue;
-    private String mLabel;
-    private double mFrequency1;
-    private double mFrequency2;
-    private String mMetadataKey;
+    private final int mValue;
+    private final String mLabel;
+    private final double mFrequency1;
+    private final double mFrequency2;
+    private final String mMetadataKey;
 
     private static final Tone[] LOOKUP_TABLE = new Tone[164];
 
