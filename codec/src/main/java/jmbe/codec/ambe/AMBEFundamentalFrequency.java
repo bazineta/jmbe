@@ -25,7 +25,7 @@ import jmbe.codec.IFundamentalFrequency;
 /**
  * AMBE Fundamental frequency, harmonic count and frame type enumeration
  */
-public enum AMBEFundamentalFrequency implements IFundamentalFrequency
+enum AMBEFundamentalFrequency implements IFundamentalFrequency
 {
     W0(0, 0.049971, 9, FrameType.VOICE),
     W1(1, 0.049215,  9, FrameType.VOICE),

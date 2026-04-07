@@ -19,7 +19,6 @@
 
 package jmbe.codec;
 
-import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -29,49 +28,17 @@ import java.util.Random;
  */
 class WhiteNoiseGenerator
 {
-    private static final float GAIN = 26562.5f; //53,125 or 81% of saturation
-
-    private Random mRandom = new Random();
-    private float[] mCurrentBuffer = new float[256];
-
-    WhiteNoiseGenerator()
-    {
-        nextSample();
-
-        for(int x = 0; x < mCurrentBuffer.length; x++)
-        {
-            mCurrentBuffer[x] = nextSample();
-        }
-    }
+    private final Random mRandom = new Random();
 
     /**
      * Generates the next (random) white noise sample in the range -1.0<>1.0
      */
-    public float nextSample()
+    private float nextSample()
     {
         return (mRandom.nextFloat() * 2.0f - 1.0f);
     }
 
-    /**
-     * Generates an array of 256 white noise samples in range of -26,562.5 <> 26,562.5 where each successive buffer
-     * overlaps the preceding buffer by 96 samples.
-     */
-    public float[] nextBuffer()
-    {
-        float[] copy = Arrays.copyOf(mCurrentBuffer, mCurrentBuffer.length);
-
-        //Shift the end 96 samples to the beginning so that we can generate 160 new samples
-        System.arraycopy(mCurrentBuffer, 160, mCurrentBuffer, 0, 96);
-
-        for(int x = 96; x < 256; x++)
-        {
-            mCurrentBuffer[x] = nextSample() * GAIN;
-        }
-
-        return copy;
-    }
-
-    public float[] getSamples(int length, float gain)
+    float[] getSamples(int length, float gain)
     {
         float[] samples = new float[length];
 

@@ -6,7 +6,7 @@ import java.util.Set;
 /**
  * AMBE tones enumeration
  */
-public enum Tone
+enum Tone
 {
     T5(5, "156.25", 5.0 * 31.25, 0.0),
     T6(6, "187.50", 6.0 * 31.25, 0.0),

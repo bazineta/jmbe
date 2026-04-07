@@ -22,7 +22,7 @@ package jmbe.codec.imbe;
 /**
  * Gain value enumeration from Annex E
  */
-public enum Gain
+enum Gain
 {
     G0(-2.842205f),
     G1(-2.694235f),

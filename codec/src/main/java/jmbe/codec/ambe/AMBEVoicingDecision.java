@@ -3,7 +3,7 @@ package jmbe.codec.ambe;
 /**
  * AMBE Voice/Unvoiced Quantization Vector enumeration
  */
-public enum AMBEVoicingDecision
+enum AMBEVoicingDecision
 {
     V0(new boolean[]{true, true, true, true, true, true, true, true}),
     V1(new boolean[]{true, true, true, true, true, true, true, true}),

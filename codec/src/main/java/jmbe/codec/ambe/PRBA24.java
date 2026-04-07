@@ -3,7 +3,7 @@ package jmbe.codec.ambe;
 /**
  * Predictive Residual Block Average (PRBA) enumeration with values for indices 2 - 4
  */
-public enum PRBA24
+enum PRBA24
 {
     V0(0.526055f, -0.328567f, -0.304727f),
     V1(0.441044f, -0.303127f, -0.201114f),

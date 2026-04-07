@@ -6,7 +6,7 @@ package jmbe.codec.ambe;
  * Note: first parameter is ICD stated gain table.  Second parameter is an adjustment to increase gain level of
  * generated audio that more closely matches output gain of hardware generated audio.
  */
-public enum DifferentialGain
+enum DifferentialGain
 {
     G0(-2.00000f, 1.00f),
     G1(-0.67000f, 1.10f),

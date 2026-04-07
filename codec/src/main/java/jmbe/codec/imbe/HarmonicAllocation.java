@@ -22,7 +22,7 @@ package jmbe.codec.imbe;
 /**
  * J-block harmonic (L) allocations
  */
-public enum HarmonicAllocation
+enum HarmonicAllocation
 {
     L09( 9, new int[][]{{2}, {3}, {4}, {5, 8}, {6, 9}, {7, 10}}),
     L10(10, new int[][]{{2}, {3}, {4, 8}, {5, 9}, {6, 10}, {7, 11}}),

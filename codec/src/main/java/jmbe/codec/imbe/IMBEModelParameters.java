@@ -26,7 +26,7 @@ import java.util.Arrays;
 /**
  * IMBE audio frame model parameters used for synthesizing audio sample data.
  */
-public class IMBEModelParameters extends MBEModelParameters
+class IMBEModelParameters extends MBEModelParameters
 {
     private static final int MAX_HEADROOM_THRESHOLD = 3;
     private int mErrorCountCoset0 = 0;  //E0

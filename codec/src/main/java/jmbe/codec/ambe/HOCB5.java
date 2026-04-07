@@ -4,7 +4,7 @@ package jmbe.codec.ambe;
 /**
  * Higher order coefficients - b5
  */
-public enum HOCB5
+enum HOCB5
 {
     V0(new float[] {0.264108f, 0.045976f, -0.200999f, -0.122344f}),
     V1(new float[] {0.479006f, 0.227924f, -0.016114f, -0.006835f}),

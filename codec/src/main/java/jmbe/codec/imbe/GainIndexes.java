@@ -26,7 +26,7 @@ package jmbe.codec.imbe;
  * of which is K.  The comment following each entry indicates the indexes allocated to vector b1 and bits 2/1 for
  * vector b2 are the next two consecutive bits following vector b1.
  */
-public enum GainIndexes
+enum GainIndexes
 {
     L09(9, new int[] {6, 7, 8, 95, 96, 140}), //K3 92,93,94
     L10(10, new int[] {6, 7, 8, 96, 97, 140}), //K4 92,93,94,95

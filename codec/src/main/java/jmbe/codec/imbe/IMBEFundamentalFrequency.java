@@ -34,7 +34,7 @@ import java.util.EnumSet;
  * L = floor( .9254 * floor( ( Pi / w0 ) + 0.25 )
  */
 
-public enum IMBEFundamentalFrequency implements IFundamentalFrequency
+enum IMBEFundamentalFrequency implements IFundamentalFrequency
 {
     W0(0),
     W1(1),

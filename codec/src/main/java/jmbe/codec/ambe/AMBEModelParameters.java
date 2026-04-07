@@ -29,7 +29,7 @@ import java.util.Arrays;
 /**
  * AMBE frame voice model parameters
  */
-public class AMBEModelParameters extends MBEModelParameters
+class AMBEModelParameters extends MBEModelParameters
 {
     private static final Logger mLog = LoggerFactory.getLogger(AMBEModelParameters.class);
 

@@ -27,7 +27,7 @@ package jmbe.codec.imbe;
  *
  * Step sizes are defined in Annex F and also Tables 3 and 4 using the indexes from Annex G.
  */
-public enum StepSizes
+enum StepSizes
 {
     L09( 9, new float[]{0.00310f, 0.00402f, 0.00336f, 0.00290f, 0.00264f, 0.00614f, 0.01228f, 0.02456f}),
     L10(10, new float[]{0.00620f, 0.00402f, 0.00672f, 0.00580f, 0.00528f, 0.00614f, 0.02456f, 0.04605f, 0.08596f}),

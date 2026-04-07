@@ -3,7 +3,7 @@ package jmbe.codec.ambe;
 /**
  * Log Magnitude Prediction Residual Block Lengths
  */
-public enum LMPRBlockLength
+enum LMPRBlockLength
 {
     L0(new int[] {0, 0, 0, 0, 0}),
     L1(new int[] {0, 0, 0, 0, 0}),

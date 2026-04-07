@@ -26,7 +26,7 @@ import java.util.BitSet;
 /**
  * Utility class to process IMBE Voice Frame interleaving.
  */
-public class IMBEInterleave
+class IMBEInterleave
 {
 	private static int[] DEINTERLEAVE = new int[] { 0,24,48,72,96,120,25,
 		1,73,49,121,97,2,26,50,74,98,122,27,3,75,51,123,99,4,28,52,76,100,124,

@@ -3,7 +3,7 @@ package jmbe.codec.ambe;
 /**
  * Higher order coefficients - b7
  */
-public enum HOCB7
+enum HOCB7
 {
     V0(new float[] {0.182478f, 0.271794f, -0.057639f, 0.026115f}),
     V1(new float[] {0.110795f, 0.092854f, 0.078125f, -0.082726f}),

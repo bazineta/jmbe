@@ -22,7 +22,7 @@ package jmbe.codec.ambe;
 /**
  * AMBE tone frame parameters
  */
-public class ToneParameters
+class ToneParameters
 {
     private Tone mTone;
     private int mAmplitude;

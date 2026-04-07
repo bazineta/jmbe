@@ -35,7 +35,7 @@ public class AudioWithoutMetadata implements IAudioWithMetadata
      * Constructs an instance
      * @param audio samples
      */
-    public AudioWithoutMetadata(float[] audio)
+    private AudioWithoutMetadata(float[] audio)
     {
         mAudio = audio;
     }

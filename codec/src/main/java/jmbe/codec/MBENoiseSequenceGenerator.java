@@ -19,14 +19,12 @@
 
 package jmbe.codec;
 
-import java.util.Arrays;
-
 class MBENoiseSequenceGenerator
 {
     private float mSample = 3147;
     private float[] mCurrentBuffer = new float[256];
 
-    public float next()
+    private float next()
     {
         float next = mSample;
         mSample = ((171.0f * next) + 11213.0f) % 53125;
@@ -34,17 +32,9 @@ class MBENoiseSequenceGenerator
     }
 
     /**
-     * Generates an array of 256 white noise samples.
-     */
-    public float[] nextBuffer()
-    {
-        return nextBuffer(Arrays.copyOf(mCurrentBuffer, mCurrentBuffer.length));
-    }
-
-    /**
      * Copies the next 256 white noise samples into the provided buffer.
      */
-    public float[] nextBuffer(float[] copy)
+    float[] nextBuffer(float[] copy)
     {
         System.arraycopy(mCurrentBuffer, 0, copy, 0, mCurrentBuffer.length);
 
