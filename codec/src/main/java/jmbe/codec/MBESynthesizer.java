@@ -210,7 +210,12 @@ public abstract class MBESynthesizer
         float[] u = mMBENoiseSequenceGenerator.nextBuffer(mNoiseSamples);
 
         float[] voiced = getVoiced(parameters, u);
-        applyWindowInPlace(u);
+
+        for(int x = 0; x < u.length; x++)
+        {
+            u[x] *= synthesisWindow(x - 128);
+        }
+
         float[] unvoiced = getUnvoicedFromWindowed(parameters, u);
 
         //Alg #142 - combine voiced and unvoiced audio samples to form the completed audio samples.
@@ -252,32 +257,6 @@ public abstract class MBESynthesizer
     }
 
     /**
-     * Applies the synthesis window to the 256-element white noise array by considering the samples of the array to
-     * be indexed as -128 <> 127
-     * @param whiteNoise samples to window
-     * @return windowed white noise samples
-     */
-    private float[] applyWindow(float[] whiteNoise)
-    {
-        float[] windowed = new float[whiteNoise.length];
-
-        for(int x = 0; x < whiteNoise.length; x++)
-        {
-            windowed[x] = whiteNoise[x] * synthesisWindow(x - 128);
-        }
-
-        return windowed;
-    }
-
-    private void applyWindowInPlace(float[] whiteNoise)
-    {
-        for(int x = 0; x < whiteNoise.length; x++)
-        {
-            whiteNoise[x] *= synthesisWindow(x - 128);
-        }
-    }
-
-    /**
      * Generates the unvoiced component of the audio signal using a white noise
      * generator where the frequency components corresponding to the voiced
      * harmonics are removed from the white noise.
@@ -287,7 +266,13 @@ public abstract class MBESynthesizer
      */
     public float[] getUnvoiced(MBEModelParameters parameters, float[] whiteNoiseSamples)
     {
-        float[] Uw = applyWindow(whiteNoiseSamples);
+        float[] Uw = new float[whiteNoiseSamples.length];
+
+        for(int x = 0; x < whiteNoiseSamples.length; x++)
+        {
+            Uw[x] = whiteNoiseSamples[x] * synthesisWindow(x - 128);
+        }
+
         return getUnvoicedFromWindowed(parameters, Uw);
     }
 
