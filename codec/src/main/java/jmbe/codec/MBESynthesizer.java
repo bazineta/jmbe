@@ -139,7 +139,7 @@ public abstract class MBESynthesizer
      *
      * Alg #122
      */
-    public static int[] getFrequencyBandEdgeMinimums(MBEModelParameters voiceParameters)
+    private static int[] getFrequencyBandEdgeMinimums(MBEModelParameters voiceParameters)
     {
         int[] a = new int[voiceParameters.getL() + 1];
 
@@ -158,7 +158,7 @@ public abstract class MBESynthesizer
      *
      * Alg #123
      */
-    public static int[] getFrequencyBandEdgeMaximums(MBEModelParameters voiceParameters)
+    private static int[] getFrequencyBandEdgeMaximums(MBEModelParameters voiceParameters)
     {
         int[] b = new int[voiceParameters.getL() + 1];
 
@@ -175,7 +175,7 @@ public abstract class MBESynthesizer
     /**
      * Returns the speech synthesis window coefficient from appendix I
      */
-    public static float synthesisWindow(int n)
+    private static float synthesisWindow(int n)
     {
         if(n < -105 || n > 105)
         {
@@ -188,7 +188,7 @@ public abstract class MBESynthesizer
     /**
      * Returns the pitch refinement window coefficient from appendix C
      */
-    public static float pitchRefinementWindow(int n)
+    private static float pitchRefinementWindow(int n)
     {
         if(n < -110 || n > 110)
         {
@@ -204,7 +204,7 @@ public abstract class MBESynthesizer
      * @param parameters to use in generating the voice frame
      * @return samples scaled to -1.0 <> 1.0
      */
-    public float[] getVoice(MBEModelParameters parameters)
+    protected float[] getVoice(MBEModelParameters parameters)
     {
         //Alg #117 - generate white noise samples.
         float[] u = mMBENoiseSequenceGenerator.nextBuffer(mNoiseSamples);
@@ -251,7 +251,7 @@ public abstract class MBESynthesizer
      *
      * @return samples
      */
-    public float[] getWhiteNoise()
+    protected float[] getWhiteNoise()
     {
         return mWhiteNoiseGenerator.getSamples(SAMPLES_PER_FRAME, 0.003f);
     }
@@ -264,7 +264,7 @@ public abstract class MBESynthesizer
      * @param parameters from the voice frame
      * @return - 160 samples of unvoiced audio component
      */
-    public float[] getUnvoiced(MBEModelParameters parameters, float[] whiteNoiseSamples)
+    private float[] getUnvoiced(MBEModelParameters parameters, float[] whiteNoiseSamples)
     {
         float[] Uw = new float[whiteNoiseSamples.length];
 
@@ -399,7 +399,7 @@ public abstract class MBESynthesizer
      * @param u = white noise samples from algorithm #117
      * @return - 160 samples of voiced audio component
      */
-    public float[] getVoiced(MBEModelParameters currentFrame, float[] u)
+    private float[] getVoiced(MBEModelParameters currentFrame, float[] u)
     {
         MBEModelParameters previousFrame = getPreviousFrame();
         float currentFrequency = currentFrame.getFundamentalFrequency();
