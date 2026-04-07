@@ -27,7 +27,7 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 
 
-public class IMBEFrame
+class IMBEFrame
 {
     public static final float LOG_2 = (float)Math.log(2.0);
 
@@ -70,7 +70,7 @@ public class IMBEFrame
      * Use the .getDefault() method to generate the first (default) IMBE frame
      * to use at the start of a sequence.
      */
-    public IMBEFrame(byte[] data)
+    IMBEFrame(byte[] data)
     {
         mFrame = BinaryFrame.fromBytes(data, ByteOrder.LITTLE_ENDIAN);
         decode();

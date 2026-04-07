@@ -30,7 +30,7 @@ import java.util.Arrays;
 /**
  * AMBE 3600 (2450 bits data and 1150 bps FEC) frame decoder
  */
-public class AMBEFrame
+class AMBEFrame
 {
     private static final int[] VECTOR_C0 = {0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 1, 5,
         9, 13, 17, 21};
@@ -80,7 +80,7 @@ public class AMBEFrame
      *
      * @param frame byte array containing frame bits.  This should be a 9-element byte array equivalent to 72 bits.
      */
-    public AMBEFrame(byte[] frame)
+    AMBEFrame(byte[] frame)
     {
         mFrame = BinaryFrame.fromBytes(frame, ByteOrder.LITTLE_ENDIAN);
         decode();

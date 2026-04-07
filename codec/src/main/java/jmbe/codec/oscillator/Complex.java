@@ -24,20 +24,20 @@ import java.io.Serializable;
 /**
  * Complex sample and related utility methods
  */
-public class Complex implements Serializable
+class Complex implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
     private float mLeft;
     private float mRight;
 
-    public Complex(float left, float right)
+    Complex(float left, float right)
     {
         mLeft = left;
         mRight = right;
     }
 
-    public Complex()
+    Complex()
     {
         this(0.0f, 0.0f);
     }

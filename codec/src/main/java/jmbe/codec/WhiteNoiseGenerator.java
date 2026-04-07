@@ -27,14 +27,14 @@ import java.util.Random;
  *
  * NOTE: replaces Algorithm 117 with a more natural sounding gaussian noise generator.
  */
-public class WhiteNoiseGenerator
+class WhiteNoiseGenerator
 {
     private static final float GAIN = 26562.5f; //53,125 or 81% of saturation
 
     private Random mRandom = new Random();
     private float[] mCurrentBuffer = new float[256];
 
-    public WhiteNoiseGenerator()
+    WhiteNoiseGenerator()
     {
         nextSample();
 

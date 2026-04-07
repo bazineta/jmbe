@@ -22,31 +22,20 @@ package jmbe.codec.imbe;
 import jmbe.codec.MBEModelParameters;
 import jmbe.codec.MBESynthesizer;
 
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.SourceDataLine;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
 /**
  * IMBE synthesizer for IMBE audio frames
  */
-public class IMBESynthesizer extends MBESynthesizer
+class IMBESynthesizer extends MBESynthesizer
 {
     private IMBEModelParameters mPreviousParameters = new IMBEModelParameters();
 
     @Override
-    public MBEModelParameters getPreviousFrame()
+    protected MBEModelParameters getPreviousFrame()
     {
         return mPreviousParameters;
     }
 
-    public void reset()
+    void reset()
     {
         mPreviousParameters = new IMBEModelParameters();
     }
@@ -62,7 +51,7 @@ public class IMBESynthesizer extends MBESynthesizer
      *
      * @return ByteBuffer containing the audio sample bytes
      */
-    public float[] getAudio(IMBEFrame frame)
+    float[] getAudio(IMBEFrame frame)
     {
         IMBEModelParameters parameters = frame.getModelParameters(mPreviousParameters);
 

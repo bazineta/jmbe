@@ -21,7 +21,7 @@ package jmbe.codec;
 
 import java.util.Arrays;
 
-public class MBENoiseSequenceGenerator
+class MBENoiseSequenceGenerator
 {
     private float mSample = 3147;
     private float[] mCurrentBuffer = new float[256];

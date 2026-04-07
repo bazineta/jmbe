@@ -21,17 +21,10 @@ package jmbe.codec.ambe;
 
 import jmbe.codec.oscillator.Oscillator;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.SourceDataLine;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
 /**
  * Tone Generator
  */
-public class ToneGenerator
+class ToneGenerator
 {
     private static final double SAMPLE_RATE = 8000.0;
     private static final int SAMPLE_COUNT = 160;  //20ms of samples at 8000 Hz
@@ -46,7 +39,7 @@ public class ToneGenerator
      * @param toneParameters containing frequency(s) and amplitude
      * @return pcm audio samples
      */
-    public float[] generate(ToneParameters toneParameters)
+    float[] generate(ToneParameters toneParameters)
     {
         if(!toneParameters.isValidTone())
         {

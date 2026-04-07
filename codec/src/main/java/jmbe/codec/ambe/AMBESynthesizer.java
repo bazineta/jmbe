@@ -21,34 +21,9 @@ package jmbe.codec.ambe;
 
 import jmbe.codec.MBEModelParameters;
 import jmbe.codec.MBESynthesizer;
-import jmbe.codec.imbe.IMBEAudioCodec;
-import jmbe.iface.IAudioCodec;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-
-public class AMBESynthesizer extends MBESynthesizer
+class AMBESynthesizer extends MBESynthesizer
 {
-    private static final Logger mLog = LoggerFactory.getLogger(AMBESynthesizer.class);
-
     private ToneGenerator mToneGenerator = new ToneGenerator();
     private AMBEModelParameters mPreviousFrame = new AMBEModelParameters();
 
@@ -58,12 +33,12 @@ public class AMBESynthesizer extends MBESynthesizer
      * @return parameters
      */
     @Override
-    public MBEModelParameters getPreviousFrame()
+    protected MBEModelParameters getPreviousFrame()
     {
         return mPreviousFrame;
     }
 
-    public void reset()
+    void reset()
     {
         mPreviousFrame = new AMBEModelParameters();
     }
@@ -74,7 +49,7 @@ public class AMBESynthesizer extends MBESynthesizer
      * @param toneParameters to use in generating the tone frame
      * @return samples
      */
-    public float[] getTone(ToneParameters toneParameters)
+    private float[] getTone(ToneParameters toneParameters)
     {
         return mToneGenerator.generate(toneParameters);
     }
@@ -86,7 +61,7 @@ public class AMBESynthesizer extends MBESynthesizer
      * @param frame of audio
      * @return decoded audio samples
      */
-    public float[] getAudio(AMBEFrame frame)
+    float[] getAudio(AMBEFrame frame)
     {
         float[] audio = frame.isToneFrame() ? getToneFrameAudio(frame) : getVoiceFrameAudio(frame);
 
@@ -141,93 +116,4 @@ public class AMBESynthesizer extends MBESynthesizer
         mPreviousFrame = new AMBEModelParameters();
         return getWhiteNoise();
     }
-
-    /**
-     * Debug method for generating and testing AMBE recordings
-     * @param frames of AMBE encoded audio
-     * @param outputFile for generated audio
-     * @throws IOException for IO errors
-     */
-    public static void makeAMBEWaves(List<byte[]> frames, File outputFile) throws IOException
-    {
-        makeWaves(new AMBEAudioCodec(), frames, outputFile);
-    }
-
-    /**
-     * Debug method for generating and testing IMBE recordings
-     * @param frames of IMBE encoded audio
-     * @param outputFile for generated audio
-     * @throws IOException for IO errors
-     */
-    public static void makeIMBEWaves(List<byte[]> frames, File outputFile) throws IOException
-    {
-        makeWaves(new IMBEAudioCodec(), frames, outputFile);
-    }
-
-    private static void makeWaves(IAudioCodec audioCodec, List<byte[]> frames, File outputFile) throws IOException
-    {
-        AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
-            8000.0f, 16, 1, 2, 8000.0f, false);
-        ByteBuffer byteBuffer = ByteBuffer.allocate(frames.size() * 320).order(ByteOrder.LITTLE_ENDIAN);
-
-        for(byte[] frame : frames)
-        {
-            float[] samples = audioCodec.getAudio(frame);
-
-            for(float sample : samples)
-            {
-                byteBuffer.putShort((short)(sample * Short.MAX_VALUE));
-            }
-        }
-
-        AudioInputStream ais = new AudioInputStream(new ByteArrayInputStream(byteBuffer.array()), audioFormat,
-            byteBuffer.array().length);
-
-        try(OutputStream outputStream = Files.newOutputStream(outputFile.toPath(), StandardOpenOption.CREATE,
-            StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE))
-        {
-            AudioSystem.write(ais, AudioFileFormat.Type.WAVE, outputStream);
-        }
-    }
-
-    /**
-     * Debug method for generating 20ms label tracks for Audacity
-     * @param sourceFile to use in naming the label track file.
-     * @param frameCount number of 20ms frame labels to generate
-     */
-    public static void makeLabelTrack(Path sourceFile, int frameCount)
-    {
-        Path output = Paths.get(sourceFile.toString().replace("_frames.txt", "_labels.txt"));
-
-        DecimalFormat df = new DecimalFormat("0.000000");
-        double frameMultiplier = 160.0 / 8000.0;
-
-        try
-        {
-            if(Files.exists(output))
-            {
-                Files.delete(output);
-            }
-
-            StringBuilder sb = new StringBuilder();
-
-            for(int x = 0; x < frameCount; x++)
-            {
-                if(x != 0)
-                {
-                    sb.append("\n");
-                }
-                double start = x * frameMultiplier;
-                double end = (x + 1) * frameMultiplier;
-                sb.append(df.format(start)).append("\t").append(df.format(end)).append("\t").append((x + 1));
-            }
-
-            Files.write(output, sb.toString().getBytes());
-        }
-        catch(IOException ioe)
-        {
-            mLog.error("Error writing tracks to [" + output.toString() + "]");
-        }
-    }
-
 }

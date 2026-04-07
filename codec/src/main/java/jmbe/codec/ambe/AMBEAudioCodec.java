@@ -45,7 +45,7 @@ public class AMBEAudioCodec implements IAudioCodec
     /**
      * Converts the AMBE frame into PCM audio samples at 8kHz 16-bit rate
      */
-    public float[] getAudio(AMBEFrame ambeFrame)
+    private float[] getAudio(AMBEFrame ambeFrame)
     {
         return mSynthesizer.getAudio(ambeFrame);
     }
