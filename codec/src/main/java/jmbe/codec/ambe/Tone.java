@@ -223,26 +223,26 @@ enum Tone
         return mFrequency2 > 0.0;
     }
 
-    ToneCategory getCategory()
+    String getMetadataKey()
     {
         if(T160.mValue <= mValue && mValue <= T163.mValue)
         {
-            return ToneCategory.CALL_PROGRESS;
+            return "CALL PROGRESS";
         }
         else if(T5.mValue <= mValue && mValue <= T122.mValue)
         {
-            return ToneCategory.DISCRETE;
+            return "TONE";
         }
         else if(T128_DTMF_0.mValue <= mValue && mValue <= T143_DTMF_POUND.mValue)
         {
-            return ToneCategory.DTMF;
+            return "DTMF";
         }
         else if(T144_KNOX_0.mValue <= mValue && mValue <= T159_KNOX_POUND.mValue)
         {
-            return ToneCategory.KNOX;
+            return "KNOX";
         }
 
-        return ToneCategory.INVALID;
+        return null;
     }
 
     /**

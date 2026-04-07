@@ -19,8 +19,6 @@
 
 package jmbe.codec.ambe;
 
-import jmbe.audio.AudioWithMetadata;
-import jmbe.codec.FrameType;
 import jmbe.iface.IAudioCodec;
 import jmbe.iface.IAudioWithMetadata;
 
@@ -61,26 +59,7 @@ public class AMBEAudioCodec implements IAudioCodec
     public IAudioWithMetadata getAudioWithMetadata(byte[] frameData)
     {
         AMBEFrame frame = new AMBEFrame(frameData);
-        float[] audio = getAudio(frame);
-
-        if(frame.getFrameType() == FrameType.TONE)
-        {
-            Tone tone = frame.getToneParameters().getTone();
-            ToneCategory toneCategory = tone.getCategory();
-
-            switch(toneCategory)
-            {
-                case CALL_PROGRESS:
-                case DISCRETE:
-                case DTMF:
-                case KNOX:
-                    return AudioWithMetadata.create(audio, toneCategory.getMetadataKey(), tone.toString());
-                case INVALID:
-                    break;
-            }
-        }
-
-        return AudioWithMetadata.create(audio);
+        return frame.getAudioWithMetadata(getAudio(frame));
     }
 
     /**

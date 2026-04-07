@@ -20,6 +20,7 @@
 package jmbe.codec.ambe;
 
 import jmbe.binary.BinaryFrame;
+import jmbe.audio.AudioWithMetadata;
 import jmbe.codec.FrameType;
 import jmbe.edac.Golay23;
 import jmbe.edac.Golay24;
@@ -227,6 +228,21 @@ class AMBEFrame
         }
 
         throw new IllegalStateException("Frame type [" + getFrameType() + "] does not provide tone model parameters");
+    }
+
+    AudioWithMetadata getAudioWithMetadata(float[] audio)
+    {
+        if(getFrameType() == FrameType.TONE)
+        {
+            String metadataKey = mTone.getMetadataKey();
+
+            if(metadataKey != null)
+            {
+                return AudioWithMetadata.create(audio, metadataKey, mTone.toString());
+            }
+        }
+
+        return AudioWithMetadata.create(audio);
     }
 
     /**
