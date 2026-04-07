@@ -18,7 +18,7 @@ package jmbe.codec.imbe;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  ******************************************************************************/
 
-import jmbe.audio.AudioWithoutMetadata;
+import jmbe.audio.AudioWithMetadata;
 import jmbe.iface.IAudioCodec;
 import jmbe.iface.IAudioWithMetadata;
 
@@ -60,7 +60,7 @@ public class IMBEAudioCodec implements IAudioCodec
     public IAudioWithMetadata getAudioWithMetadata(byte[] frameData)
     {
         IMBEFrame frame = new IMBEFrame(frameData);
-        return AudioWithoutMetadata.create(mSynthesizer.getAudio(frame));
+        return AudioWithMetadata.create(mSynthesizer.getAudio(frame));
     }
 
     /**
