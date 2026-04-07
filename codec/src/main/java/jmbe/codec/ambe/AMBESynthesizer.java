@@ -150,35 +150,7 @@ public class AMBESynthesizer extends MBESynthesizer
      */
     public static void makeAMBEWaves(List<byte[]> frames, File outputFile) throws IOException
     {
-        IAudioCodec audioCodec = new AMBEAudioCodec();
-
-        AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
-            8000.0f, 16, 1, 2, 8000.0f, false);
-        ByteBuffer byteBuffer = ByteBuffer.allocate(frames.size() * 320);
-
-        for(byte[] frame : frames)
-        {
-            float[] samples = audioCodec.getAudio(frame);
-
-            ByteBuffer converted = ByteBuffer.allocate(samples.length * 2);
-            converted = converted.order(ByteOrder.LITTLE_ENDIAN);
-
-            for(float sample : samples)
-            {
-                converted.putShort((short)(sample * Short.MAX_VALUE));
-            }
-
-            byte[] bytes = converted.array();
-            byteBuffer.put(bytes);
-        }
-
-        AudioInputStream ais = new AudioInputStream(new ByteArrayInputStream(byteBuffer.array()), audioFormat, byteBuffer.array().length);
-
-        try(OutputStream outputStream = Files.newOutputStream(outputFile.toPath(), StandardOpenOption.CREATE,
-            StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE))
-        {
-            AudioSystem.write(ais, AudioFileFormat.Type.WAVE, outputStream);
-        }
+        makeWaves(new AMBEAudioCodec(), frames, outputFile);
     }
 
     /**
@@ -189,29 +161,27 @@ public class AMBESynthesizer extends MBESynthesizer
      */
     public static void makeIMBEWaves(List<byte[]> frames, File outputFile) throws IOException
     {
-        IAudioCodec audioCodec = new IMBEAudioCodec();
+        makeWaves(new IMBEAudioCodec(), frames, outputFile);
+    }
 
+    private static void makeWaves(IAudioCodec audioCodec, List<byte[]> frames, File outputFile) throws IOException
+    {
         AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
             8000.0f, 16, 1, 2, 8000.0f, false);
-        ByteBuffer byteBuffer = ByteBuffer.allocate(frames.size() * 320);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(frames.size() * 320).order(ByteOrder.LITTLE_ENDIAN);
 
         for(byte[] frame : frames)
         {
             float[] samples = audioCodec.getAudio(frame);
 
-            ByteBuffer converted = ByteBuffer.allocate(samples.length * 2);
-            converted = converted.order(ByteOrder.LITTLE_ENDIAN);
-
             for(float sample : samples)
             {
-                converted.putShort((short)(sample * Short.MAX_VALUE));
+                byteBuffer.putShort((short)(sample * Short.MAX_VALUE));
             }
-
-            byte[] bytes = converted.array();
-            byteBuffer.put(bytes);
         }
 
-        AudioInputStream ais = new AudioInputStream(new ByteArrayInputStream(byteBuffer.array()), audioFormat, byteBuffer.array().length);
+        AudioInputStream ais = new AudioInputStream(new ByteArrayInputStream(byteBuffer.array()), audioFormat,
+            byteBuffer.array().length);
 
         try(OutputStream outputStream = Files.newOutputStream(outputFile.toPath(), StandardOpenOption.CREATE,
             StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE))
