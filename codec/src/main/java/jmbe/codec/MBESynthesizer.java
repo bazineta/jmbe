@@ -438,7 +438,7 @@ public abstract class MBESynthesizer
         {
             mCurrentPhaseV = mPreviousPhaseV;
             mPreviousPhaseV = currentPhaseV;
-            return new float[160];
+            return new float[SAMPLES_PER_FRAME];
         }
 
         int currentL = currentFrame.getL();
