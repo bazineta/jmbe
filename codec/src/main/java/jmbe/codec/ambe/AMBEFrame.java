@@ -243,11 +243,11 @@ class AMBEFrame
     {
         if(getFrameType() == FrameType.TONE)
         {
-            String metadataKey = mTone.getMetadataKey();
+            String type = mTone.getType();
 
-            if(metadataKey != null)
+            if(type != null)
             {
-                return AudioWithMetadata.create(audio, metadataKey, mTone.toString());
+                return AudioWithMetadata.create(audio, type, mTone.toString());
             }
         }
 

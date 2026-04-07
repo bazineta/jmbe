@@ -192,7 +192,7 @@ enum Tone
         mLabel = label;
         mFrequency1 = frequency1;
         mFrequency2 = frequency2;
-        mMetadataKey = getMetadataKey(value);
+        mType = getType(value);
     }
 
     @Override
@@ -226,19 +226,19 @@ enum Tone
     }
 
     /**
-     * Metadata key for this tone if it is a valid tone with a defined
-     * metadata key; otherwise null
+     * Type for this tone if it is a valid tone with a defined type;
+     * otherwise null
      */
-    String getMetadataKey()
+    String getType()
     {
-        return mMetadataKey;
+        return mType;
     }
 
     /**
-     * Determines the metadata key for a given tone value at construction
-     * time of the enumeration entries.
+     * Determines the type for a given tone value at construction time
+     * of the enumeration entries.
      */
-    private static String getMetadataKey(int value)
+    private static String getType(int value)
     {
         if     (5   <= value && value <= 122) return "TONE";
         else if(128 <= value && value <= 143) return "DTMF";
