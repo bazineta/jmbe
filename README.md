@@ -4,19 +4,29 @@ Copyright (C) 2015-2020 Dennis Sheirer
 
 ## Fork Notes
 
-This fork is maintained for use with sdrtrunk and focuses on practical codec maintenance:
+This fork is maintained for use with my fork of [sdrtrunk](https://github.com/bazineta/sdrtrunk) and
+focuses on practical codec maintenance:
 
-* lint cleanup
-* a few minor bug fixes
-* build compatibility updates for current Gradle/JDK toolchains
-* significant tuning pass undertaken
-* reduced allocation pressure in the AMBE/IMBE synthesis paths
-* voiced synthesis replaced per-sample `Math.cos()` calls with incremental phasor rotation,
-  reducing transcendental function calls from O(samples × harmonics) to O(harmonics) per frame.
-  At 50 voice frames per second, 160 samples per frame, and up to 56 harmonics, this moves the
-  hot path from as many as 448,000 `Math.cos()` calls per second to roughly 22,000 setup `sin`/`cos`
-  calls per second, with the inner sample loop handled by multiply/add phasor rotation. This improves
-  throughput while preserving audio quality in A/B testing
+* **Lint and code quality** — visibility narrowing, dead code removal, encapsulation of internal
+  implementation details, and general cleanup throughout the AMBE/IMBE codec paths
+* **Tuning** - AMBE frames are no longer decoded twice
+* **Bug fixes** — fixed off-by-one in voiced band counting that inflated phase noise injection
+* **Build compatibility** — updated for current Gradle and JDK toolchains; I use JDK 26
+* **Reduced allocation pressure** — instance-field reuse for hot-path buffers (noise samples, phase
+  arrays, DFT bin scalars); eliminated per-frame array allocations in spectral amplitude interpolation,
+  enum lookups, and overlap-add synthesis
+* **Removed unused code** — debug wave-generation utilities, the unused `ambeplus` package, and
+  internal tables and classes not reachable from the sdrtrunk API
+* **Voiced synthesis performance** — replaced per-sample `Math.cos()` calls with incremental phasor
+  rotation, reducing transcendental function calls from O(samples × harmonics) to O(harmonics) per
+  frame. At 50 voice frames/sec, 160 samples/frame, and up to 56 harmonics, this moves the hot path
+  from ~448,000 `Math.cos()` calls/sec to ~22,000 setup calls/sec, with the inner loop handled by
+  multiply/add rotation. Audio quality is preserved or improved under A/B testing.
+
+In short, this fork has been radically pruned to just what sdrtrunk requires and tuned to be faster
+than the original. Vectorization of the synthesis loop is difficult given the data-dependent branching
+on voicing decisions, but eliminating trigonometry from the inner loop and replacing it with fused
+multiply-add phasor rotation is a significant win on any hardware.
 
 The original patent notice and upstream usage notes remain below.
 
