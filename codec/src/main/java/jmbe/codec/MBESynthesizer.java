@@ -527,11 +527,15 @@ public abstract class MBESynthesizer
                 }
                 else if(!currentVoiced && previousVoiced)
                 {
-                    voiced[n] += getPreviousOnlyVoicedContribution(l, n, previousM, previousFrequency);
+                    //Alg #131
+                    voiced[n] += 2.0f * (synthesisWindow(n) * previousM[l] *
+                        (float)Math.cos(mPreviousPhaseO[l] + (previousFrequency * n * l)));
                 }
                 else if(currentVoiced && !previousVoiced)
                 {
-                    voiced[n] += getCurrentOnlyVoicedContribution(l, n, currentM, currentFrequency, currentPhaseO);
+                    //Alg #132
+                    voiced[n] += 2.0f * (synthesisWindow(n - SAMPLES_PER_FRAME) * currentM[l] *
+                        (float)Math.cos(currentPhaseO[l] + (currentFrequency * (n - SAMPLES_PER_FRAME) * l)));
                 }
             }
         }
@@ -542,20 +546,5 @@ public abstract class MBESynthesizer
         mPreviousPhaseO = currentPhaseO;
 
         return voiced;
-    }
-
-    private float getPreviousOnlyVoicedContribution(int l, int n, float[] previousM, float previousFrequency)
-    {
-        //Alg #131
-        return 2.0f * (synthesisWindow(n) * previousM[l] *
-            (float)Math.cos(mPreviousPhaseO[l] + (previousFrequency * n * l)));
-    }
-
-    private float getCurrentOnlyVoicedContribution(int l, int n, float[] currentM, float currentFrequency,
-        float[] currentPhaseO)
-    {
-        //Alg #132
-        return 2.0f * (synthesisWindow(n - SAMPLES_PER_FRAME) * currentM[l] *
-            (float)Math.cos(currentPhaseO[l] + (currentFrequency * (n - SAMPLES_PER_FRAME) * l)));
     }
 }
