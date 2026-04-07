@@ -31,6 +31,10 @@ import java.util.Map;
 public class AudioWithMetadata implements IAudioWithMetadata
 {
     private final float[] mAudio;
+    /*
+     * Metadata is only produced for AMBE tone frames; normal AMBE voice frames and all IMBE frames carry audio only.
+     * Keep the map lazy so audio-only frames don't allocate a HashMap and don't need a separate no-metadata wrapper.
+     */
     private Map<String,String> mMetadataMap;
 
     /**
