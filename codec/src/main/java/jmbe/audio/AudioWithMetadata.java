@@ -22,28 +22,25 @@ package jmbe.audio;
 import jmbe.iface.IAudioWithMetadata;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Audio without any accompanying metadata.
+ * Audio with optional metadata. Metadata is only produced for AMBE tone frames; normal AMBE voice frames and all IMBE
+ * frames carry audio only.
  */
 public class AudioWithMetadata implements IAudioWithMetadata
 {
     private final float[] mAudio;
-    /*
-     * Metadata is only produced for AMBE tone frames; normal AMBE voice frames and all IMBE frames carry audio only.
-     * Keep the map lazy so audio-only frames don't allocate a HashMap and don't need a separate no-metadata wrapper.
-     */
-    private Map<String,String> mMetadataMap;
+    private final Map<String,String> mMetadataMap;
 
     /**
      * Constructs an instance
      * @param audio samples
      */
-    private AudioWithMetadata(float[] audio)
+    private AudioWithMetadata(float[] audio, Map<String,String> metadataMap)
     {
         mAudio = audio;
+        mMetadataMap = metadataMap;
     }
 
     /**
@@ -55,41 +52,31 @@ public class AudioWithMetadata implements IAudioWithMetadata
         return mAudio;
     }
 
-
-    public void addMetadata(String key, String value)
-    {
-        if(mMetadataMap == null)
-        {
-            mMetadataMap = new HashMap<>();
-        }
-
-        mMetadataMap.put(key, value);
-    }
-
     /**
-     * Indicates if there is any metadata associated with this audio block
+     * Indicates if there is any metadata associated with this audio block.
      */
     @Override
     public boolean hasMetadata()
     {
-        return mMetadataMap != null && !mMetadataMap.isEmpty();
+        return !mMetadataMap.isEmpty();
     }
 
     /**
      * Metadata map.
-     * @return map of metadata
      */
     @Override
     public Map<String,String> getMetadata()
     {
-        return mMetadataMap == null ? Collections.emptyMap() : mMetadataMap;
+        return mMetadataMap;
     }
 
-    /**
-     * Convenience method to create an instance
-     */
     public static AudioWithMetadata create(float[] audio)
     {
-        return new AudioWithMetadata(audio);
+        return new AudioWithMetadata(audio, Collections.emptyMap());
+    }
+
+    public static AudioWithMetadata create(float[] audio, String key, String value)
+    {
+        return new AudioWithMetadata(audio, Collections.singletonMap(key, value));
     }
 }

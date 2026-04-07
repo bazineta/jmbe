@@ -61,7 +61,7 @@ public class AMBEAudioCodec implements IAudioCodec
     public IAudioWithMetadata getAudioWithMetadata(byte[] frameData)
     {
         AMBEFrame frame = new AMBEFrame(frameData);
-        AudioWithMetadata audioWithMetadata = AudioWithMetadata.create(getAudio(frame));
+        float[] audio = getAudio(frame);
 
         if(frame.getFrameType() == FrameType.TONE)
         {
@@ -69,23 +69,23 @@ public class AMBEAudioCodec implements IAudioCodec
 
             if(tone.isCallProgressTone())
             {
-                audioWithMetadata.addMetadata("CALL PROGRESS", tone.toString());
+                return AudioWithMetadata.create(audio, "CALL PROGRESS", tone.toString());
             }
             else if(tone.isDiscreteTone())
             {
-                audioWithMetadata.addMetadata("TONE", tone.toString());
+                return AudioWithMetadata.create(audio, "TONE", tone.toString());
             }
             else if(tone.isDtmfTone())
             {
-                audioWithMetadata.addMetadata("DTMF", tone.toString());
+                return AudioWithMetadata.create(audio, "DTMF", tone.toString());
             }
             else if(tone.isKnoxTone())
             {
-                audioWithMetadata.addMetadata("KNOX", tone.toString());
+                return AudioWithMetadata.create(audio, "KNOX", tone.toString());
             }
         }
 
-        return audioWithMetadata;
+        return AudioWithMetadata.create(audio);
     }
 
     /**
