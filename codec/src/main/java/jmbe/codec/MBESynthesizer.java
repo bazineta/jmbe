@@ -34,6 +34,9 @@ public abstract class MBESynthesizer
     private static final float MAXIMUM_AUDIO_AMPLITUDE = 0.95f;
     protected static final int SAMPLES_PER_FRAME = 160;
     private static final float WHITE_NOISE_SCALAR = TWO_PI / 53125.0f;
+    private static final int PREVIOUS_VOICED = 0x1;
+    private static final int CURRENT_VOICED = 0x2;
+    private static final int BOTH_VOICED = PREVIOUS_VOICED | CURRENT_VOICED;
 
     // Algorithm 121 - unvoiced scaling coefficient (yw) from synthesis window (ws) and pitch refinement window (wr)
     private static final float UNVOICED_SCALING_COEFFICIENT = 146.17696f;
@@ -485,57 +488,58 @@ public abstract class MBESynthesizer
         {
             for(int l = 1; l <= maxL; l++)
             {
-                boolean currentVoiced = l <= currentL && currentVoicing[l];
-                boolean previousVoiced = l <= previousL && previousVoicing[l];
-
-                if(currentVoiced && previousVoiced)
+                switch((l <= currentL  && currentVoicing[l]  ? CURRENT_VOICED  : 0) |
+                       (l <= previousL && previousVoicing[l] ? PREVIOUS_VOICED : 0))
                 {
-                    if(l >= 8 || exceedsThreshold)
-                    {
-                        //Alg #133
-                        float previousPhase = mPreviousPhaseO[l] + (previousFrequency * n * l);
-                        float previousContribution =
-                            (float)(2.0f * (synthesisWindow(n) * previousM[l] * Math.cos(previousPhase)));
+                    case BOTH_VOICED:
+                        if(l >= 8 || exceedsThreshold)
+                        {
+                            //Alg #133
+                            float previousPhase = mPreviousPhaseO[l] + (previousFrequency * n * l);
+                            float previousContribution =
+                                (float)(2.0f * (synthesisWindow(n) * previousM[l] * Math.cos(previousPhase)));
 
-                        float currentPhase = currentPhaseO[l] + (currentFrequency * (n - SAMPLES_PER_FRAME) * l);
-                        float currentContribution = (float)(2.0f *
-                            (synthesisWindow(n - SAMPLES_PER_FRAME) * currentM[l] * Math.cos(currentPhase)));
+                            float currentPhase = currentPhaseO[l] + (currentFrequency * (n - SAMPLES_PER_FRAME) * l);
+                            float currentContribution = (float)(2.0f *
+                                (synthesisWindow(n - SAMPLES_PER_FRAME) * currentM[l] * Math.cos(currentPhase)));
 
-                        voiced[n] += previousContribution + currentContribution;
-                    }
-                    else
-                    {
-                        //Alg #135 - amplitude function
-                        //Performs linear interpolation of the harmonic's amplitude from previous frame to current
-                        float amplitude =
-                            previousM[l] + (((float)n / (float)SAMPLES_PER_FRAME) * (currentM[l] - previousM[l]));
+                            voiced[n] += previousContribution + currentContribution;
+                        }
+                        else
+                        {
+                            //Alg #135 - amplitude function
+                            //Performs linear interpolation of the harmonic's amplitude from previous frame to current
+                            float amplitude =
+                                previousM[l] + (((float)n / (float)SAMPLES_PER_FRAME) * (currentM[l] - previousM[l]));
 
-                        //Alg #137
-                        float ol = (currentPhaseO[l] - mPreviousPhaseO[l] - (phaseOffsetPerFrame * l));
+                            //Alg #137
+                            float ol = (currentPhaseO[l] - mPreviousPhaseO[l] - (phaseOffsetPerFrame * l));
 
-                        //Alg #138
-                        float wl = (ol - (TWO_PI * (float)Math.floor((ol + (float)Math.PI) / TWO_PI))) / 160.0f;
+                            //Alg #138
+                            float wl = (ol - (TWO_PI * (float)Math.floor((ol + (float)Math.PI) / TWO_PI))) / 160.0f;
 
-                        //Alg #136 - phase function
-                        float phase = mPreviousPhaseO[l] +
-                            (((previousFrequency * l) + wl) * n) +
-                            ((currentFrequency - previousFrequency) * ((l *  n * n) / 320.0f));
+                            //Alg #136 - phase function
+                            float phase = mPreviousPhaseO[l] +
+                                (((previousFrequency * l) + wl) * n) +
+                                ((currentFrequency - previousFrequency) * ((l *  n * n) / 320.0f));
 
-                        //Alg #134
-                        voiced[n] += (float)(2.0f * (amplitude * Math.cos(phase)));
-                    }
-                }
-                else if(!currentVoiced && previousVoiced)
-                {
-                    //Alg #131
-                    voiced[n] += 2.0f * (synthesisWindow(n) * previousM[l] *
-                        (float)Math.cos(mPreviousPhaseO[l] + (previousFrequency * n * l)));
-                }
-                else if(currentVoiced && !previousVoiced)
-                {
-                    //Alg #132
-                    voiced[n] += 2.0f * (synthesisWindow(n - SAMPLES_PER_FRAME) * currentM[l] *
-                        (float)Math.cos(currentPhaseO[l] + (currentFrequency * (n - SAMPLES_PER_FRAME) * l)));
+                            //Alg #134
+                            voiced[n] += (float)(2.0f * (amplitude * Math.cos(phase)));
+                        }
+                        break;
+                    case PREVIOUS_VOICED:
+                        //Alg #131
+                        voiced[n] += 2.0f * (synthesisWindow(n) * previousM[l] *
+                            (float)Math.cos(mPreviousPhaseO[l] + (previousFrequency * n * l)));
+                        break;
+                    case CURRENT_VOICED:
+                        //Alg #132
+                        voiced[n] += 2.0f * (synthesisWindow(n - SAMPLES_PER_FRAME) * currentM[l] *
+                            (float)Math.cos(currentPhaseO[l] + (currentFrequency * (n - SAMPLES_PER_FRAME) * l)));
+                        break;
+                    default:
+                        //Alg #130 - both harmonics unvoiced, so no voiced contribution is added.
+                        break;
                 }
             }
         }
