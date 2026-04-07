@@ -11,6 +11,12 @@ This fork is maintained for use with sdrtrunk and focuses on practical codec mai
 * reduced allocation pressure in the AMBE/IMBE synthesis paths
 * build compatibility updates for current Gradle/JDK toolchains
 * a few minor bug fixes
+* voiced synthesis replaced per-sample `Math.cos()` calls with incremental phasor rotation,
+  reducing transcendental function calls from O(samples × harmonics) to O(harmonics) per frame.
+  At 50 voice frames per second, 160 samples per frame, and up to 56 harmonics, this moves the
+  hot path from as many as 448,000 `Math.cos()` calls per second to roughly 22,000 setup `sin`/`cos`
+  calls per second, with the inner sample loop handled by multiply/add phasor rotation. This improves
+  throughput while preserving audio quality in A/B testing
 
 The original patent notice and upstream usage notes remain below.
 
