@@ -88,7 +88,8 @@ public abstract class MBESynthesizer
         0.048915f, 0.044573f, 0.040451f, 0.036546f, 0.032852f, 0.029365f, 0.026081f, 0.022995f, 0.020102f, 0.017397f,
         0.014873f
     };
-    // Derived from the fixed synthesis window table above for n=0..159. If that table changes, these values must be
+    // Derived from the fixed synthesis window table above for zero-based audio sample indexes in one frame
+    // (n = 0..SAMPLES_PER_FRAME - 1). This is not harmonic/band indexing. If that table changes, these values must be
     // recalculated to keep the weighted overlap-add denominator correct.
     private static final float[] UNVOICED_OVERLAP_DENOMINATORS = new float[]{
         1.00000000f, 1.00000000f, 1.00000000f, 1.00000000f, 1.00000000f, 1.00000000f, 1.00000000f, 1.00000000f,
