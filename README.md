@@ -7,10 +7,10 @@ Copyright (C) 2015-2020 Dennis Sheirer
 This fork is maintained for use with sdrtrunk and focuses on practical codec maintenance:
 
 * lint cleanup
+* a few minor bug fixes
+* build compatibility updates for current Gradle/JDK toolchains
 * significant tuning pass undertaken
 * reduced allocation pressure in the AMBE/IMBE synthesis paths
-* build compatibility updates for current Gradle/JDK toolchains
-* a few minor bug fixes
 * voiced synthesis replaced per-sample `Math.cos()` calls with incremental phasor rotation,
   reducing transcendental function calls from O(samples × harmonics) to O(harmonics) per frame.
   At 50 voice frames per second, 160 samples per frame, and up to 56 harmonics, this moves the
