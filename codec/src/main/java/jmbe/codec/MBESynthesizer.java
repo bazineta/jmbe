@@ -484,63 +484,39 @@ public abstract class MBESynthesizer
         // current and previous frames for each harmonic.
         boolean exceedsThreshold = Math.abs(currentFrequency - previousFrequency) >= (0.1 * currentFrequency);
 
-        for(int n = 0; n < SAMPLES_PER_FRAME; n++)
+        for(int l = 1; l <= maxL; l++)
         {
-            for(int l = 1; l <= maxL; l++)
+            switch((l <= currentL  && currentVoicing[l]  ? CURRENT_VOICED  : 0) |
+                   (l <= previousL && previousVoicing[l] ? PREVIOUS_VOICED : 0))
             {
-                switch((l <= currentL  && currentVoicing[l]  ? CURRENT_VOICED  : 0) |
-                       (l <= previousL && previousVoicing[l] ? PREVIOUS_VOICED : 0))
-                {
-                    case BOTH_VOICED:
-                        if(l >= 8 || exceedsThreshold)
-                        {
-                            //Alg #133
-                            float previousPhase = mPreviousPhaseO[l] + (previousFrequency * n * l);
-                            float previousContribution =
-                                (float)(2.0f * (synthesisWindow(n) * previousM[l] * Math.cos(previousPhase)));
-
-                            float currentPhase = currentPhaseO[l] + (currentFrequency * (n - SAMPLES_PER_FRAME) * l);
-                            float currentContribution = (float)(2.0f *
-                                (synthesisWindow(n - SAMPLES_PER_FRAME) * currentM[l] * Math.cos(currentPhase)));
-
-                            voiced[n] += previousContribution + currentContribution;
-                        }
-                        else
-                        {
-                            //Alg #135 - amplitude function
-                            //Performs linear interpolation of the harmonic's amplitude from previous frame to current
-                            float amplitude =
-                                previousM[l] + (((float)n / (float)SAMPLES_PER_FRAME) * (currentM[l] - previousM[l]));
-
-                            //Alg #137
-                            float ol = (currentPhaseO[l] - mPreviousPhaseO[l] - (phaseOffsetPerFrame * l));
-
-                            //Alg #138
-                            float wl = (ol - (TWO_PI * (float)Math.floor((ol + (float)Math.PI) / TWO_PI))) / 160.0f;
-
-                            //Alg #136 - phase function
-                            float phase = mPreviousPhaseO[l] +
-                                (((previousFrequency * l) + wl) * n) +
-                                ((currentFrequency - previousFrequency) * ((l *  n * n) / 320.0f));
-
-                            //Alg #134
-                            voiced[n] += (float)(2.0f * (amplitude * Math.cos(phase)));
-                        }
-                        break;
-                    case PREVIOUS_VOICED:
-                        //Alg #131
-                        voiced[n] += 2.0f * (synthesisWindow(n) * previousM[l] *
-                            (float)Math.cos(mPreviousPhaseO[l] + (previousFrequency * n * l)));
-                        break;
-                    case CURRENT_VOICED:
-                        //Alg #132
-                        voiced[n] += 2.0f * (synthesisWindow(n - SAMPLES_PER_FRAME) * currentM[l] *
-                            (float)Math.cos(currentPhaseO[l] + (currentFrequency * (n - SAMPLES_PER_FRAME) * l)));
-                        break;
-                    default:
-                        //Alg #130 - both harmonics unvoiced, so no voiced contribution is added.
-                        break;
-                }
+                case BOTH_VOICED:
+                    if(l >= 8 || exceedsThreshold)
+                    {
+                        //Alg #133
+                        addWindowedOscillator(voiced, previousM[l], mPreviousPhaseO[l], previousFrequency * l, 0);
+                        addWindowedOscillator(voiced, currentM[l],
+                            currentPhaseO[l] - (currentFrequency * SAMPLES_PER_FRAME * l), currentFrequency * l,
+                            -SAMPLES_PER_FRAME);
+                    }
+                    else
+                    {
+                        addInterpolatedOscillator(voiced, l, previousM[l], currentM[l], mPreviousPhaseO[l],
+                            currentPhaseO[l], previousFrequency, currentFrequency, phaseOffsetPerFrame);
+                    }
+                    break;
+                case PREVIOUS_VOICED:
+                    //Alg #131
+                    addWindowedOscillator(voiced, previousM[l], mPreviousPhaseO[l], previousFrequency * l, 0);
+                    break;
+                case CURRENT_VOICED:
+                    //Alg #132
+                    addWindowedOscillator(voiced, currentM[l],
+                        currentPhaseO[l] - (currentFrequency * SAMPLES_PER_FRAME * l), currentFrequency * l,
+                        -SAMPLES_PER_FRAME);
+                    break;
+                default:
+                    //Alg #130 - both harmonics unvoiced, so no voiced contribution is added.
+                    break;
             }
         }
 
@@ -550,5 +526,64 @@ public abstract class MBESynthesizer
         mPreviousPhaseO = currentPhaseO;
 
         return voiced;
+    }
+
+    private static void addWindowedOscillator(float[] voiced, float amplitude, float initialPhase, float phaseStep,
+        int windowOffset)
+    {
+        double cosPhase = Math.cos(initialPhase);
+        double sinPhase = Math.sin(initialPhase);
+        double cosStep = Math.cos(phaseStep);
+        double sinStep = Math.sin(phaseStep);
+        float scaledAmplitude = 2.0f * amplitude;
+
+        for(int n = 0; n < SAMPLES_PER_FRAME; n++)
+        {
+            voiced[n] += scaledAmplitude * synthesisWindow(n + windowOffset) * (float)cosPhase;
+
+            double nextCosPhase = (cosPhase * cosStep) - (sinPhase * sinStep);
+            sinPhase = (sinPhase * cosStep) + (cosPhase * sinStep);
+            cosPhase = nextCosPhase;
+        }
+    }
+
+    private static void addInterpolatedOscillator(float[] voiced, int harmonic, float previousAmplitude,
+        float currentAmplitude, float previousPhase, float currentPhase, float previousFrequency, float currentFrequency,
+        float phaseOffsetPerFrame)
+    {
+        //Alg #135 - amplitude function
+        float amplitude = previousAmplitude;
+        float amplitudeStep = (currentAmplitude - previousAmplitude) / SAMPLES_PER_FRAME;
+
+        //Alg #137
+        float ol = currentPhase - previousPhase - (phaseOffsetPerFrame * harmonic);
+
+        //Alg #138
+        float wl = (ol - (TWO_PI * (float)Math.floor((ol + (float)Math.PI) / TWO_PI))) / 160.0f;
+
+        double cosPhase = Math.cos(previousPhase);
+        double sinPhase = Math.sin(previousPhase);
+        double phaseStep = (previousFrequency * harmonic) + wl +
+            ((currentFrequency - previousFrequency) * harmonic / 320.0);
+        double phaseStepIncrement = (currentFrequency - previousFrequency) * harmonic / 160.0;
+        double cosStep = Math.cos(phaseStep);
+        double sinStep = Math.sin(phaseStep);
+        double cosStepIncrement = Math.cos(phaseStepIncrement);
+        double sinStepIncrement = Math.sin(phaseStepIncrement);
+
+        for(int n = 0; n < SAMPLES_PER_FRAME; n++)
+        {
+            //Alg #134
+            voiced[n] += 2.0f * amplitude * (float)cosPhase;
+            amplitude += amplitudeStep;
+
+            double nextCosPhase = (cosPhase * cosStep) - (sinPhase * sinStep);
+            sinPhase = (sinPhase * cosStep) + (cosPhase * sinStep);
+            cosPhase = nextCosPhase;
+
+            double nextCosStep = (cosStep * cosStepIncrement) - (sinStep * sinStepIncrement);
+            sinStep = (sinStep * cosStepIncrement) + (cosStep * sinStepIncrement);
+            cosStep = nextCosStep;
+        }
     }
 }
