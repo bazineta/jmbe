@@ -33,6 +33,7 @@ public abstract class MBESynthesizer
     private static final float AUDIO_SCALAR_16_BITS_SIGNED = 1.00f / Short.MAX_VALUE;
     private static final float MAXIMUM_AUDIO_AMPLITUDE = 0.95f;
     protected static final int SAMPLES_PER_FRAME = 160;
+    private static final int MAX_HARMONIC = 56;
     private static final float WHITE_NOISE_SCALAR = TWO_PI / 53125.0f;
     private static final int PREVIOUS_VOICED = 0x1;
     private static final int CURRENT_VOICED = 0x2;
@@ -212,7 +213,7 @@ public abstract class MBESynthesizer
         float[] unvoiced = getUnvoicedFromWindowed(parameters, u);
 
         //Alg #142 - combine voiced and unvoiced audio samples to form the completed audio samples.
-        for(int x = 0; x < 160; x++)
+        for(int x = 0; x < SAMPLES_PER_FRAME; x++)
         {
             voiced[x] = clip((voiced[x] + unvoiced[x]) * AUDIO_SCALAR_16_BITS_SIGNED);
         }
@@ -246,7 +247,7 @@ public abstract class MBESynthesizer
      */
     public float[] getWhiteNoise()
     {
-        return mWhiteNoiseGenerator.getSamples(160, 0.003f);
+        return mWhiteNoiseGenerator.getSamples(SAMPLES_PER_FRAME, 0.003f);
     }
 
     /**
@@ -424,7 +425,7 @@ public abstract class MBESynthesizer
         float[] currentPhaseV = mCurrentPhaseV;
 
         //Update each of the phase values
-        for(int l = 1; l <= 56; l++)
+        for(int l = 1; l <= MAX_HARMONIC; l++)
         {
             //Unwrap the previous phase before updating to avoid overflow
             mPreviousPhaseV[l] %= TWO_PI;
@@ -461,7 +462,7 @@ public abstract class MBESynthesizer
         int threshold = (int)Math.floor(currentL / 4.0f);
 
         //Update each of the phase values
-        for(int l = 1; l <= 56; l++)
+        for(int l = 1; l <= MAX_HARMONIC; l++)
         {
             //Alg #140 - calculate current phase o values
             if(l <= threshold)
@@ -500,8 +501,41 @@ public abstract class MBESynthesizer
                     }
                     else
                     {
-                        addInterpolatedOscillator(voiced, l, previousM[l], currentM[l], mPreviousPhaseO[l],
-                            currentPhaseO[l], previousFrequency, currentFrequency, phaseOffsetPerFrame);
+                        //Alg #135 - amplitude function
+                        float amplitude = previousM[l];
+                        float amplitudeStep = (currentM[l] - previousM[l]) / SAMPLES_PER_FRAME;
+
+                        //Alg #137
+                        float ol = currentPhaseO[l] - mPreviousPhaseO[l] - (phaseOffsetPerFrame * l);
+
+                        //Alg #138
+                        float wl = (ol - (TWO_PI * (float)Math.floor((ol + (float)Math.PI) / TWO_PI))) /
+                            SAMPLES_PER_FRAME;
+
+                        double cosPhase = Math.cos(mPreviousPhaseO[l]);
+                        double sinPhase = Math.sin(mPreviousPhaseO[l]);
+                        double phaseStep = (previousFrequency * l) + wl +
+                            ((currentFrequency - previousFrequency) * l / (2.0 * SAMPLES_PER_FRAME));
+                        double phaseStepIncrement = (currentFrequency - previousFrequency) * l / SAMPLES_PER_FRAME;
+                        double cosStep = Math.cos(phaseStep);
+                        double sinStep = Math.sin(phaseStep);
+                        double cosStepIncrement = Math.cos(phaseStepIncrement);
+                        double sinStepIncrement = Math.sin(phaseStepIncrement);
+
+                        for(int n = 0; n < SAMPLES_PER_FRAME; n++)
+                        {
+                            //Alg #134
+                            voiced[n] += 2.0f * amplitude * (float)cosPhase;
+                            amplitude += amplitudeStep;
+
+                            double nextCosPhase = (cosPhase * cosStep) - (sinPhase * sinStep);
+                            sinPhase = (sinPhase * cosStep) + (cosPhase * sinStep);
+                            cosPhase = nextCosPhase;
+
+                            double nextCosStep = (cosStep * cosStepIncrement) - (sinStep * sinStepIncrement);
+                            sinStep = (sinStep * cosStepIncrement) + (cosStep * sinStepIncrement);
+                            cosStep = nextCosStep;
+                        }
                     }
                     break;
                 case PREVIOUS_VOICED:
@@ -544,46 +578,6 @@ public abstract class MBESynthesizer
             double nextCosPhase = (cosPhase * cosStep) - (sinPhase * sinStep);
             sinPhase = (sinPhase * cosStep) + (cosPhase * sinStep);
             cosPhase = nextCosPhase;
-        }
-    }
-
-    private static void addInterpolatedOscillator(float[] voiced, int harmonic, float previousAmplitude,
-        float currentAmplitude, float previousPhase, float currentPhase, float previousFrequency, float currentFrequency,
-        float phaseOffsetPerFrame)
-    {
-        //Alg #135 - amplitude function
-        float amplitude = previousAmplitude;
-        float amplitudeStep = (currentAmplitude - previousAmplitude) / SAMPLES_PER_FRAME;
-
-        //Alg #137
-        float ol = currentPhase - previousPhase - (phaseOffsetPerFrame * harmonic);
-
-        //Alg #138
-        float wl = (ol - (TWO_PI * (float)Math.floor((ol + (float)Math.PI) / TWO_PI))) / 160.0f;
-
-        double cosPhase = Math.cos(previousPhase);
-        double sinPhase = Math.sin(previousPhase);
-        double phaseStep = (previousFrequency * harmonic) + wl +
-            ((currentFrequency - previousFrequency) * harmonic / 320.0);
-        double phaseStepIncrement = (currentFrequency - previousFrequency) * harmonic / 160.0;
-        double cosStep = Math.cos(phaseStep);
-        double sinStep = Math.sin(phaseStep);
-        double cosStepIncrement = Math.cos(phaseStepIncrement);
-        double sinStepIncrement = Math.sin(phaseStepIncrement);
-
-        for(int n = 0; n < SAMPLES_PER_FRAME; n++)
-        {
-            //Alg #134
-            voiced[n] += 2.0f * amplitude * (float)cosPhase;
-            amplitude += amplitudeStep;
-
-            double nextCosPhase = (cosPhase * cosStep) - (sinPhase * sinStep);
-            sinPhase = (sinPhase * cosStep) + (cosPhase * sinStep);
-            cosPhase = nextCosPhase;
-
-            double nextCosStep = (cosStep * cosStepIncrement) - (sinStep * sinStepIncrement);
-            sinStep = (sinStep * cosStepIncrement) + (cosStep * sinStepIncrement);
-            cosStep = nextCosStep;
         }
     }
 }
