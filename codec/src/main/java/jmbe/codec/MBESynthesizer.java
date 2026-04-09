@@ -31,6 +31,10 @@ public abstract class MBESynthesizer
     private static final float TWO_PI = (float)Math.PI * 2.0f;
     private static final float TWO56_OVER_TWO_PI = 256.0f / TWO_PI;
     private static final float AUDIO_SCALAR_16_BITS_SIGNED = 1.00f / Short.MAX_VALUE;
+    // Final output trim to keep synthesized audio below full scale before clipping. The AMBE synthesis chain routinely
+    // produces near-int16-range raw samples, so a small uniform trim reduces frequent edge clipping without altering
+    // the gain tables or spectral amplitude math.
+    private static final float OUTPUT_GAIN = 0.85f;
     private static final float MAXIMUM_AUDIO_AMPLITUDE = 0.95f;
     protected static final int SAMPLES_PER_FRAME = 160;
     private static final int MAX_HARMONIC = 56;
@@ -145,7 +149,7 @@ public abstract class MBESynthesizer
         //Alg #142 - combine voiced and unvoiced audio samples to form the completed audio samples.
         for(int x = 0; x < SAMPLES_PER_FRAME; x++)
         {
-            voiced[x] = clip((voiced[x] + unvoiced[x]) * AUDIO_SCALAR_16_BITS_SIGNED);
+            voiced[x] = clip((voiced[x] + unvoiced[x]) * AUDIO_SCALAR_16_BITS_SIGNED * OUTPUT_GAIN);
         }
 
         return voiced;
