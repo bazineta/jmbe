@@ -248,27 +248,34 @@ public abstract class MBESynthesizer
 
     private float getUnvoicedBandScalar(float amplitude, int minimum, int maximum, float[] dftBins)
     {
-        float numerator = 0.0f;
-
-        for(int n = minimum; n < maximum; n++)
+        if(amplitude <= 0.0f || minimum >= 128)
         {
-            if(n < 128)
-            {
-                int dftBinIndex = 2 * n;
-
-                // Real component
-                numerator += (dftBins[dftBinIndex] * dftBins[dftBinIndex]);
-
-                dftBinIndex++;
-
-                // Imaginary component
-                numerator += (dftBins[dftBinIndex] * dftBins[dftBinIndex]);
-            }
+            return 0.0f;
         }
 
-        float denominator = (maximum - minimum);
+        int upperBound = Math.min(maximum, 128);
+        float numerator = 0.0f;
 
-        return UNVOICED_SCALING_COEFFICIENT * amplitude / (float)Math.sqrt((numerator / denominator));
+        for(int n = minimum; n < upperBound; n++)
+        {
+            int dftBinIndex = 2 * n;
+
+            // Real component
+            numerator += (dftBins[dftBinIndex] * dftBins[dftBinIndex]);
+
+            dftBinIndex++;
+
+            // Imaginary component
+            numerator += (dftBins[dftBinIndex] * dftBins[dftBinIndex]);
+        }
+
+        if(numerator <= 0.0f)
+        {
+            return 0.0f;
+        }
+
+        return UNVOICED_SCALING_COEFFICIENT * amplitude /
+            (float)Math.sqrt(numerator / (maximum - minimum));
     }
 
     private float[] combineUnvoicedSamples(float[] uw)
