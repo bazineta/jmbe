@@ -9,14 +9,20 @@ focuses on practical codec maintenance:
 
 * **Lint and code quality** — visibility narrowing, dead code removal, encapsulation of internal
   implementation details, and general cleanup throughout the AMBE/IMBE codec paths
-* **Tuning** - AMBE frames are no longer decoded twice
-* **Bug fixes** — fixed off-by-one in voiced band counting that inflated phase noise injection
+* **Removed unused code** — debug wave-generation utilities, the unused `ambeplus` package, and
+  internal tables and classes not reachable from the sdrtrunk API. The old code is still in the repo
+  history, just not in the production version.
 * **Build compatibility** — updated for current Gradle and JDK toolchains; I use JDK 26
 * **Reduced allocation pressure** — instance-field reuse for hot-path buffers (noise samples, phase
   arrays, DFT bin scalars); eliminated per-frame array allocations in spectral amplitude interpolation,
   enum lookups, and overlap-add synthesis
-* **Removed unused code** — debug wave-generation utilities, the unused `ambeplus` package, and
-  internal tables and classes not reachable from the sdrtrunk API
+* **Tuning** - AMBE frames are no longer decoded twice
+* **Bug fixes** — fixed off-by-one in voiced band counting that inflated phase noise injection
+* **Codec correctness fixes** — unvoiced band scaling now guards zero-energy FFT bands to prevent NaN
+  audio output, and voiced phase handling uses consistent normalization to keep overlap-add synthesis
+  stable across frame transitions
+* **Output calibration** — final AMBE output is trimmed slightly before clipping so routine high-energy
+  frames stay below the hard limiter more often without changing gain decoding or spectral amplitude math
 * **Voiced synthesis performance** — replaced per-sample `Math.cos()` calls with incremental phasor
   rotation, reducing transcendental function calls from O(samples × harmonics) to O(harmonics) per
   frame. At 50 voice frames/sec, 160 samples/frame, and up to 56 harmonics, this moves the hot path
