@@ -170,6 +170,22 @@ public abstract class MBESynthesizer
         return value;
     }
 
+    private static float normalizePhase(float phase)
+    {
+        phase %= TWO_PI;
+
+        if(phase > Math.PI)
+        {
+            phase -= TWO_PI;
+        }
+        else if(phase < -Math.PI)
+        {
+            phase += TWO_PI;
+        }
+
+        return phase;
+    }
+
     /**
      * Generates 160 samples (20 ms) of white noise
      *
@@ -325,10 +341,10 @@ public abstract class MBESynthesizer
         for(int l = 1; l <= MAX_HARMONIC; l++)
         {
             //Unwrap the previous phase before updating to avoid overflow
-            mPreviousPhaseV[l] %= TWO_PI;
+            mPreviousPhaseV[l] = normalizePhase(mPreviousPhaseV[l]);
 
             //Alg #139 - calculate current phase v values
-            currentPhaseV[l] = mPreviousPhaseV[l] + (phaseOffsetPerFrame * l);
+            currentPhaseV[l] = normalizePhase(mPreviousPhaseV[l] + (phaseOffsetPerFrame * l));
         }
 
         //Short circuit if there are no voiced bands and return an array of zeros
@@ -369,7 +385,7 @@ public abstract class MBESynthesizer
             else if(l <= maxL)
             {
                 float pl = WHITE_NOISE_SCALAR * u[l] - (float)Math.PI;
-                currentPhaseO[l] = currentPhaseV[l] + ((unvoicedBandCount * pl) / currentL);
+                currentPhaseO[l] = normalizePhase(currentPhaseV[l] + ((unvoicedBandCount * pl) / currentL));
             }
         }
 
@@ -390,22 +406,17 @@ public abstract class MBESynthesizer
                 case BOTH_VOICED:
                     if(l >= 8 || exceedsThreshold)
                     {
-                        //Alg #133
-                        addWindowedOscillator(voiced, previousM[l], mPreviousPhaseO[l], previousFrequency * l, 0);
+                        addWindowedOscillator(voiced, previousM[l], normalizePhase(mPreviousPhaseO[l]),
+                            previousFrequency * l, 0);
                         addWindowedOscillator(voiced, currentM[l],
-                            currentPhaseO[l] - (currentFrequency * SAMPLES_PER_FRAME * l), currentFrequency * l,
-                            -SAMPLES_PER_FRAME);
+                            normalizePhase(currentPhaseO[l] - (currentFrequency * SAMPLES_PER_FRAME * l)),
+                            currentFrequency * l, -SAMPLES_PER_FRAME);
                     }
                     else
                     {
-                        //Alg #135 - amplitude function
                         float amplitude = previousM[l];
                         float amplitudeStep = (currentM[l] - previousM[l]) / SAMPLES_PER_FRAME;
-
-                        //Alg #137
                         float ol = currentPhaseO[l] - mPreviousPhaseO[l] - (phaseOffsetPerFrame * l);
-
-                        //Alg #138
                         float wl = (ol - (TWO_PI * (float)Math.floor((ol + (float)Math.PI) / TWO_PI))) /
                             SAMPLES_PER_FRAME;
 
@@ -418,10 +429,8 @@ public abstract class MBESynthesizer
                         double sinStep = Math.sin(phaseStep);
                         double cosStepIncrement = Math.cos(phaseStepIncrement);
                         double sinStepIncrement = Math.sin(phaseStepIncrement);
-
                         for(int n = 0; n < SAMPLES_PER_FRAME; n++)
                         {
-                            //Alg #134
                             voiced[n] += 2.0f * amplitude * (float)cosPhase;
                             amplitude += amplitudeStep;
 
@@ -433,17 +442,19 @@ public abstract class MBESynthesizer
                             sinStep = (sinStep * cosStepIncrement) + (cosStep * sinStepIncrement);
                             cosStep = nextCosStep;
                         }
+
                     }
                     break;
                 case PREVIOUS_VOICED:
                     //Alg #131
-                    addWindowedOscillator(voiced, previousM[l], mPreviousPhaseO[l], previousFrequency * l, 0);
+                    addWindowedOscillator(voiced, previousM[l], normalizePhase(mPreviousPhaseO[l]),
+                        previousFrequency * l, 0);
                     break;
                 case CURRENT_VOICED:
                     //Alg #132
                     addWindowedOscillator(voiced, currentM[l],
-                        currentPhaseO[l] - (currentFrequency * SAMPLES_PER_FRAME * l), currentFrequency * l,
-                        -SAMPLES_PER_FRAME);
+                        normalizePhase(currentPhaseO[l] - (currentFrequency * SAMPLES_PER_FRAME * l)),
+                        currentFrequency * l, -SAMPLES_PER_FRAME);
                     break;
                 default:
                     //Alg #130 - both harmonics unvoiced, so no voiced contribution is added.
